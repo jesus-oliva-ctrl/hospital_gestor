@@ -3,37 +3,39 @@
 **Carrera:** Ingeniería de Software  
 **Materia:** Programación Orientada a Objetos  
 **Periodo:** Segundo Parcial / Proyecto Final  
-**Estudiante(s):** *Escribe tu nombre completo aquí*  
+**Estudiante(s):** *Jesus Benjamin Oliva Blanco*  
 **Fecha de entrega:** *AAAA-MM-DD*  
 
 ---
-
+  
 ## 1. Datos Generales del Proyecto
 
 | Campo | Descripción |
 |--------|-------------|
-| **Nombre del proyecto:** | *(Ejemplo: MediTurn, InvBox POS, FleetTrackerPro)* |
-| **Tipo de aplicación:** | ☐ Escritorio ☐ Web ☐ Móvil ☐ Otro: __________ |
-| **Lenguaje / entorno de desarrollo:** | *(Ej: Java con IntelliJ, Python con Tkinter, etc.)* |
-| **Repositorio Git (URL):** | *(Agrega el enlace de tu repositorio)* |
-| **Uso de Inteligencia Artificial:** | ☐ No ☐ Sí (describir a continuación) |
+| **Nombre del proyecto:** | *SaludSys* |
+| **Tipo de aplicación:** | ☐ Web  |
+| **Lenguaje / entorno de desarrollo:** | *C# Blazor* |
+| **Repositorio Git (URL):** | *https://github.com/jesus-oliva-ctrl/hospital_gestor/edit/main* |
+| **Uso de Inteligencia Artificial:** | ☐ Sí |
 
 **Si usas IA, explica brevemente cómo y en qué etapa contribuye:**  
-> _Ejemplo: uso ChatGPT para generar plantillas de clases, pero comprendí y adapté el código._
+
+
+Durante el desarrollo del proyecto se utilizó ChatGPT (modelo GPT-5) como herramienta de apoyo para generar plantillas de clases, estructuras de base de datos y ejemplos de código, los cuales fueron comprendidos, adaptados y modificados según las necesidades del sistema hospitalario.
+La IA se empleó únicamente como asistente de desarrollo y no como ejecutor directo del proyecto.
 
 ---
 
 ## 2. Descripción del Proyecto
 
 ### Resumen breve
-Describe tu proyecto en máximo **8 líneas**: qué hace, a quién está dirigido, y qué problema busca resolver.
-
-> _Ejemplo:_  
-> “FleetTrackerPro es una aplicación de escritorio que permite rastrear la ubicación de vehículos de una empresa de transporte universitario en tiempo real, simulando posiciones.”
+MediTrack es un sistema hospitalario que permite gestionar la información de pacientes, médicos y personal administrativo desde una única plataforma.
+Su objetivo es optimizar los procesos de registro, citas médicas y control de historial clínico.
+Está dirigido a centros de salud que buscan mejorar la organización interna y la comunicación entre áreas.
 
 ### Objetivos principales
-1.  
-2.  
+1.  Digitalizar la gestión hospitalaria, permitiendo registrar, consultar y actualizar información de pacientes, médicos y personal administrativo en una sola plataforma.
+2.  Optimizar los procesos de atención médica, facilitando la programación de citas, el acceso a historiales clínicos y la comunicación entre los distintos usuarios del sistema.
 3.  
 
 ---
