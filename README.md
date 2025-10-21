@@ -36,7 +36,7 @@ Está dirigido a centros de salud que buscan mejorar la organización interna y 
 ### Objetivos principales
 1.  Digitalizar la gestión hospitalaria, permitiendo registrar, consultar y actualizar información de pacientes, médicos y personal administrativo en una sola plataforma.
 2.  Optimizar los procesos de atención médica, facilitando la programación de citas, el acceso a historiales clínicos y la comunicación entre los distintos usuarios del sistema.
-3.  
+3.  Asegurar la integridad y confidencialidad de los datos médicos, implementando un sistema de acceso seguro basado en roles para proteger la información sensible del paciente.
 
 ---
 
@@ -44,22 +44,47 @@ Está dirigido a centros de salud que buscan mejorar la organización interna y 
 
 ### Principios de POO aplicados
 Marca los que planeas usar:
-- [ ] Encapsulamiento (atributos privados y métodos públicos)
-- [ ] Uso de constructores
-- [ ] Herencia
-- [ ] Polimorfismo
-- [ ] Interfaces o clases abstractas
+- [X] Encapsulamiento (atributos privados y métodos públicos)
+- [X] Uso de constructores
+- [X] Herencia
+- [X] Polimorfismo
+- [X] Interfaces o clases abstractas
 
 ### Clases estimadas
-- **Cantidad inicial de clases:** _____  
-- **Ejemplo de posibles clases:** *(Usuario, Producto, Pedido, etc.)*
+- **Cantidad inicial de clases:** 37  
+- **Ejemplo de posibles clases:**
+HospitalDbContext.cs 
 
+Appointment.cs
+
+Doctor.cs
+
+Inventory.cs
+
+MedicalHistory.cs
+
+Medication.cs
+
+Patient.cs
+
+Prescription.cs
+
+Role.cs
+
+Specialty.cs
+
+Staff.cs
+
+User.cs
+
+VwDoctorAgendaSummary.cs
+
+Etc.
 
 ### Persistencia de datos
 - [ ] Archivos locales  
-- [ ] Base de datos  
+- [X] Base de datos  
 - [ ] En memoria (temporal)  
-- [ ] Otro: __________
 
 ---
 
@@ -67,9 +92,9 @@ Marca los que planeas usar:
 
 | Nº | Nombre de la funcionalidad | Descripción breve | Estado actual |
 |----|-----------------------------|-------------------|----------------|
-| 1 | | | ☐ Planeada ☐ En desarrollo |
-| 2 | | | ☐ Planeada ☐ En desarrollo |
-| 3 | | | ☐ Planeada ☐ En desarrollo |
+| 1 | Autenticación y Sesión | Valida las credenciales del usuario contra la BD y mantiene su sesión activa. | ☐ En desarrollo |
+| 2 | Autorización por Roles | Un componente de seguridad que restringe el acceso a páginas y menús según el rol del usuario. | ☐ En desarrollo |
+| 3 | Gestión de informacion por Rol  | Cada Rol debe poder manejar su porpia informacion en corelacion con la Base de Datos y modificarla | ☐ Planeada |
 
 > *(Agrega más filas si lo necesitas.)*
 
@@ -83,7 +108,7 @@ Declaro que:
 - Defenderé el código que yo mismo implementé y explicaré las clases y métodos principales.
 - Si usé herramientas de IA, comprendo su funcionamiento y las adapté al contexto del proyecto.
 
-**Firma (nombre completo):** __________________________  
+**Firma (nombre completo):** Jesus Benjamin Oliva Blanco  
 
 ---
 
