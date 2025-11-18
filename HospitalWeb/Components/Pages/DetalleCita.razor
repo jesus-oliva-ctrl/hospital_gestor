@@ -1,0 +1,237 @@
+@page "/cita/{AppointmentId:int}"
+@using HospitalData.Models
+@using HospitalData.Services
+@using HospitalData.DTOs
+@inject IDoctorService DoctorService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Detalle de la Cita</PageTitle>
+
+<Autorizacion RolRequerido="Medico">
+
+    @if (_appointment == null)
+    {
+        <p><em>Cargando detalles de la cita...</em></p>
+    }
+    else
+    {
+        <h3>Atendiendo Cita</h3>
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Paciente:</strong> @_appointment.Patient.FirstName @_appointment.Patient.LastName
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Fecha:</strong> @_appointment.AppointmentDate.ToString("g")</li>
+                <li class="list-group-item"><strong>Teléfono:</strong> @_appointment.Patient.Phone</li>
+                <li class="list-group-item"><strong>Estado Actual:</strong> @_appointment.Status</li>
+            </ul>
+        </div>
+
+        <hr />
+
+        <h4>Prescripciones</h4>
+        <div class="row">
+            <div class="col-md-5">
+                <EditForm Model="_newPrescription" OnValidSubmit="HandleAddPrescription" FormName="PrescriptionForm">
+                    <DataAnnotationsValidator />
+                    <div class="mb-3">
+                        <label>Medicamento:</label>
+                        <InputSelect class="form-select" @bind-Value="_newPrescription.MedicationID">
+                            <option value="0">-- Seleccione un medicamento --</option>
+                            @if (_availableMedications != null)
+                            {
+                                @foreach (var med in _availableMedications)
+                                {
+                                    <option value="@med.MedicationId">@med.Name (Stock: @med.Quantity)</option>
+                                }
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => _newPrescription.MedicationID)" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Dosis:</label>
+                        <InputText class="form-control" @bind-Value="_newPrescription.Dosage" placeholder="Ej: 1 pastilla cada 8 horas" />
+                        <ValidationMessage For="@(() => _newPrescription.Dosage)" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Cantidad a Despachar:</label>
+                        <InputNumber class="form-control" @bind-Value="_newPrescription.QuantityToDispense" />
+                        <ValidationMessage For="@(() => _newPrescription.QuantityToDispense)" />
+                    </div>
+                    <div class="mb-3">
+                        <label>Fecha de Fin:</label>
+                        <InputDate class="form-control" @bind-Value="_newPrescription.EndDate" />
+                        <ValidationMessage For="@(() => _newPrescription.EndDate)" />
+                    </div>
+                    <button type="submit" class="btn btn-info">Añadir Prescripción</button>
+                </EditForm>
+            </div>
+
+            <div class="col-md-7">
+                <h5>Prescripciones Emitidas (Historial del Paciente)</h5>
+                @if (_addedPrescriptions == null || !_addedPrescriptions.Any())
+                {
+                    <p>El paciente no tiene prescripciones activas.</p>
+                }
+                else
+                {
+                    <ul class="list-group">
+                        @foreach (var p in _addedPrescriptions)
+                        {
+                            <li class="list-group-item">
+                                <strong>@p.Medication?.Name</strong> (@p.QuantityToDispense unidades)<br />
+                                <small>@p.Dosage. Hasta: @p.EndDate?.ToString("d")</small>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(_errorMessage)) { <div class="alert alert-danger mt-3">@_errorMessage</div> }
+        @if (!string.IsNullOrEmpty(_successMessage)) { <div class="alert alert-success mt-3">@_successMessage</div> }
+
+        <hr />
+
+        <h4>Reagendar Cita</h4>
+        <div class="row">
+            <div class="col-md-5">
+                <div class="mb-3">
+                    <label>Nueva Fecha y Hora:</label>
+                    <InputDate @bind-Value="_newScheduleDate" class="form-control" Type="InputDateType.DateTimeLocal" />
+                </div>
+                <button class="btn btn-warning" @onclick="HandleReagendar">Reagendar Cita</button>
+            </div>
+        </div>
+
+        <hr />
+
+        <h4>Diagnóstico y Notas</h4>
+        <EditForm Model="this" OnValidSubmit="HandleFinalizarCita">
+            <DataAnnotationsValidator />
+            <div class="mb-3">
+                <label>Notas del Diagnóstico:</label>
+                <InputTextArea @bind-Value="_diagnosisNotes" class="form-control" rows="5" />
+                <ValidationMessage For="@(() => _diagnosisNotes)" />
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-success">Finalizar Cita</button>
+                <button type="button" class="btn btn-danger" @onclick="HandleCancelarCita">Cancelar Cita</button>
+            </div>
+        </EditForm>
+    }
+</Autorizacion>
+
+@code {
+    [Parameter]
+    public int AppointmentId { get; set; }
+
+    private Appointment? _appointment;
+    private List<InventoryDto>? _availableMedications;
+    private List<Prescription>? _addedPrescriptions;
+
+    private CreatePrescriptionDto _newPrescription = new();
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Las notas del diagnóstico son obligatorias para finalizar una cita.")]
+    private string _diagnosisNotes = "";
+
+    private DateTime _newScheduleDate = DateTime.Now.AddDays(1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+        if (_appointment != null)
+        {
+            _newScheduleDate = _appointment.AppointmentDate;
+        }
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            _appointment = await DoctorService.GetAppointmentDetailsAsync(AppointmentId);
+            _availableMedications = await DoctorService.GetAvailableMedicationsAsync();
+
+            if (_appointment != null)
+            {
+                _addedPrescriptions = await DoctorService.GetPrescriptionsForPatientAsync(_appointment.PatientId);
+
+                _newPrescription.PatientID = _appointment.PatientId;
+                _newPrescription.DoctorID = _appointment.DoctorId;
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private async Task HandleAddPrescription()
+    {
+        if (_appointment == null) return;
+
+        _errorMessage = null;
+        _successMessage = null;
+        try
+        {
+            await DoctorService.CreatePrescriptionAsync(_newPrescription);
+            _successMessage = "Prescripción añadida exitosamente.";
+            _newPrescription = new()
+            {
+                PatientID = _appointment.PatientId,
+                DoctorID = _appointment.DoctorId
+            };
+            await LoadData();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private async Task HandleReagendar()
+    {
+        _errorMessage = null;
+        _successMessage = null;
+        if (_appointment == null) return;
+
+        var newAppointmentDto = new ScheduleAppointmentDto
+        {
+            PatientID = _appointment.PatientId,
+            DoctorID = _appointment.DoctorId,
+            AppointmentDate = _newScheduleDate
+        };
+
+        try
+        {
+            await DoctorService.RescheduleAppointmentAsync(_appointment.AppointmentId, newAppointmentDto);
+            NavigationManager.NavigateTo("/panel-doctor");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Error al reagendar: {ex.Message}";
+        }
+    }
+
+    private async Task HandleFinalizarCita()
+    {
+        if (_appointment != null)
+        {
+            await DoctorService.CompleteAppointmentAsync(_appointment.AppointmentId, _diagnosisNotes);
+            NavigationManager.NavigateTo("/panel-doctor");
+        }
+    }
+
+    private async Task HandleCancelarCita()
+    {
+        if (_appointment != null)
+        {
+            await DoctorService.CancelAppointmentAsync(_appointment.AppointmentId);
+            NavigationManager.NavigateTo("/panel-doctor");
+        }
+    }
+}
