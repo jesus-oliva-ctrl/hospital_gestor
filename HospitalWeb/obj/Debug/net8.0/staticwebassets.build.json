@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "+uXtkHIOFQzUHPvp4W14xfpNqQDlLdgBgM5VshfuQ1E=",
+  "Hash": "a4x/J7UypMiro5kkrVAjPfZgl3ZYuYlSk6IIvnbh97s=",
   "Source": "HospitalWeb",
   "BasePath": "_content/HospitalWeb",
   "Mode": "Default",
@@ -10,17 +10,17 @@
     {
       "Name": "HospitalWeb/wwwroot",
       "Source": "HospitalWeb",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
       "BasePath": "_content/HospitalWeb",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/HospitalWeb.styles.css",
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/HospitalWeb.styles.css",
       "SourceId": "HospitalWeb",
       "SourceType": "Computed",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/",
       "BasePath": "_content/HospitalWeb",
       "RelativePath": "HospitalWeb.styles.css",
       "AssetKind": "All",
@@ -33,13 +33,13 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/HospitalWeb.styles.css"
+      "OriginalItemSpec": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/HospitalWeb.styles.css"
     },
     {
-      "Identity": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/HospitalWeb.bundle.scp.css",
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/HospitalWeb.bundle.scp.css",
       "SourceId": "HospitalWeb",
       "SourceType": "Computed",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/",
       "BasePath": "_content/HospitalWeb",
       "RelativePath": "HospitalWeb.bundle.scp.css",
       "AssetKind": "All",
@@ -52,13 +52,13 @@
       "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/HospitalWeb.bundle.scp.css"
+      "OriginalItemSpec": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/HospitalWeb.bundle.scp.css"
     },
     {
-      "Identity": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/app.css",
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/app.css",
       "SourceId": "HospitalWeb",
       "SourceType": "Discovered",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
       "BasePath": "_content/HospitalWeb",
       "RelativePath": "app.css",
       "AssetKind": "All",
@@ -74,10 +74,10 @@
       "OriginalItemSpec": "wwwroot/app.css"
     },
     {
-      "Identity": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css",
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css",
       "SourceId": "HospitalWeb",
       "SourceType": "Discovered",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
       "BasePath": "_content/HospitalWeb",
       "RelativePath": "bootstrap/bootstrap.min.css",
       "AssetKind": "All",
@@ -93,10 +93,10 @@
       "OriginalItemSpec": "wwwroot/bootstrap/bootstrap.min.css"
     },
     {
-      "Identity": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css.map",
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css.map",
       "SourceId": "HospitalWeb",
       "SourceType": "Discovered",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
       "BasePath": "_content/HospitalWeb",
       "RelativePath": "bootstrap/bootstrap.min.css.map",
       "AssetKind": "All",
@@ -112,10 +112,10 @@
       "OriginalItemSpec": "wwwroot/bootstrap/bootstrap.min.css.map"
     },
     {
-      "Identity": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/favicon.png",
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/favicon.png",
       "SourceId": "HospitalWeb",
       "SourceType": "Discovered",
-      "ContentRoot": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
       "BasePath": "_content/HospitalWeb",
       "RelativePath": "favicon.png",
       "AssetKind": "All",

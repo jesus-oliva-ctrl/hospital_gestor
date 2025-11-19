@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tYBc9GVXQXLEVWmcxqE0votUpHZ+wXoxmGRwvS/IPURlou3yp4SBG+oiSEp48RA5Go7vquQBfvJJa0RAwk9jbA==",
+  "dgSpecHash": "9D6sOFDBrBu4LhhA+vHNKl39x45GCP+oTNvEuNoDHr7rJc8Ro5rNo8+Mrfmj0oJCGLQFZ6W5VMhzRoKcvMp5aQ==",
   "success": true,
-  "projectFilePath": "/mnt/night_projects/UCB/hospital_system/HospitalData/HospitalData.csproj",
+  "projectFilePath": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalData/HospitalData.csproj",
   "expectedPackageFiles": [
     "/home/night/.nuget/packages/azure.core/1.35.0/azure.core.1.35.0.nupkg.sha512",
     "/home/night/.nuget/packages/azure.identity/1.10.3/azure.identity.1.10.3.nupkg.sha512",

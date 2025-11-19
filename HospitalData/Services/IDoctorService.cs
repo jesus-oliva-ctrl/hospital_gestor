@@ -17,11 +17,10 @@ namespace HospitalData.Services
         Task<List<Prescription>> GetPrescriptionsForPatientAsync(int patientId);
         Task CreatePrescriptionAsync(CreatePrescriptionDto dto);
 
-        //Tarea que me ayude a Reagendar a un usuario
         Task ScheduleNewAppointmentAsync(ScheduleAppointmentDto dto);
         Task RescheduleAppointmentAsync(int oldAppointmentId, ScheduleAppointmentDto newAppointmentDto);
         Task <int> GetMyDoctorIdAsync(int loggedInUserId);
-
+        
         //Tarea que me de mi calendario de disponibilidad
 
 

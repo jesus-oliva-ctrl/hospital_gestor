@@ -100,14 +100,14 @@
                     <label>Nueva Fecha y Hora:</label>
                     <InputDate @bind-Value="_newScheduleDate" class="form-control" Type="InputDateType.DateTimeLocal" />
                 </div>
-                <button class="btn btn-warning" @onclick="HandleReagendar">Reagendar Cita</button>
+                <button class="btn btn-warning" @onclick="HandleReschedule">Reagendar Cita</button>
             </div>
         </div>
 
         <hr />
 
         <h4>Diagnóstico y Notas</h4>
-        <EditForm Model="this" OnValidSubmit="HandleFinalizarCita">
+        <EditForm Model="this" OnValidSubmit="HandleEndDate">
             <DataAnnotationsValidator />
             <div class="mb-3">
                 <label>Notas del Diagnóstico:</label>
@@ -117,7 +117,7 @@
 
             <div class="d-flex justify-content-between">
                 <button type="submit" class="btn btn-success">Finalizar Cita</button>
-                <button type="button" class="btn btn-danger" @onclick="HandleCancelarCita">Cancelar Cita</button>
+                <button type="button" class="btn btn-danger" @onclick="HandleCancelDate">Cancelar Cita</button>
             </div>
         </EditForm>
     }
@@ -193,7 +193,7 @@
         }
     }
 
-    private async Task HandleReagendar()
+    private async Task HandleReschedule()
     {
         _errorMessage = null;
         _successMessage = null;
@@ -217,7 +217,7 @@
         }
     }
 
-    private async Task HandleFinalizarCita()
+    private async Task HandleEndDate()
     {
         if (_appointment != null)
         {
@@ -226,7 +226,7 @@
         }
     }
 
-    private async Task HandleCancelarCita()
+    private async Task HandleCancelDate()
     {
         if (_appointment != null)
         {

@@ -1,6 +1,7 @@
 @page "/historial-consultas"
 @using HospitalData.DTOs
 @using HospitalData.Services
+@using System.Linq.Expressions
 @inject IDoctorService DoctorService
 @inject UserSessionService SessionService
 
@@ -37,6 +38,12 @@
                         <td>@registro.VisitDate.ToString("d")</td>
                         <td>@registro.PatientFirstName @registro.PatientLastName</td>
                         <td>@registro.Description</td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary"
+                                @onclick="() => OpenFollowUpModal(registro)">
+                                Agendar Seguimiento
+                            </button>
+                        </td>
                     </tr>
                 }
             </tbody>
@@ -45,8 +52,43 @@
 
 </Autorizacion>
 
-@code {
+@if (_showModal)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agendar Cita de Seguimiento</h5>
+                    <button type="button" class="btn-close" @onclick="CloseModal"></button>
+                </div>
+                <div class="modal-body">
+                    @if (!string.IsNullOrEmpty(_modalErrorMessage))
+                    {
+                        <div class="alert alert-danger">@_modalErrorMessage</div>
+                    }
+                    <div class="mb-3">
+                        <label>Nueva Fecha y Hora:</label>
+                        <InputDate @bind-Value="_newFollowUpDate" class="form-control" Type="InputDateType.DateTimeLocal" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CloseModal">Cancelar</button>
+                    <button class="btn btn-primary" @onclick="HandleScheduleFollowUp">Agendar Cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop show"></div>
+
+}
+
+@code 
+{
     private List<MedicalHistoryDto>? _historial;
+    private bool _showModal = false;
+    private MedicalHistoryDto? _selectedHistoryRecord;
+    private DateTime _newFollowUpDate = DateTime.Now.AddDays(7);
+    private string? _modalErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -61,6 +103,49 @@
             {
                 Console.WriteLine($"Error al cargar el historial: {ex.Message}");
             }
+        }
+    }
+
+    private void OpenFollowUpModal(MedicalHistoryDto record)
+    {
+        _selectedHistoryRecord = record;
+        _newFollowUpDate = DateTime.Now.AddDays(7);
+        _modalErrorMessage = null;
+        _showModal = true;
+    }
+    
+    private void CloseModal()
+    {
+        _showModal = false;
+        _selectedHistoryRecord = null;
+    }
+    private async Task HandleScheduleFollowUp()
+    {
+        _modalErrorMessage = null;
+        if (_selectedHistoryRecord == null || SessionService.CurrentUser == null)
+        {
+            _modalErrorMessage = "Error: No se ha seleccionado un paciente o usuario.";
+            return;
+        }
+
+        try
+        {
+            int doctorId = await DoctorService.GetMyDoctorIdAsync(SessionService.CurrentUser.UserID);
+
+            var newAppointmentDto = new ScheduleAppointmentDto
+            {
+                PatientID = _selectedHistoryRecord.PatientID,
+                DoctorID = doctorId,
+                AppointmentDate = _newFollowUpDate
+            };
+
+            await DoctorService.ScheduleNewAppointmentAsync(newAppointmentDto);
+
+            CloseModal(); 
+        }
+        catch (Exception ex)
+        {
+            _modalErrorMessage = ex.Message;
         }
     }
 }

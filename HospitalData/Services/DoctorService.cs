@@ -141,7 +141,6 @@ namespace HospitalData.Services
                 throw new Exception("Error: No hay suficiente stock del medicamento seleccionado.");
             }
         }
-
         public async Task ScheduleNewAppointmentAsync(ScheduleAppointmentDto dto)
         {
             try

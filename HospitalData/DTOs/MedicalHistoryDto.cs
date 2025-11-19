@@ -1,3 +1,5 @@
+using Microsoft.Identity.Client;
+
 namespace HospitalData.DTOs
 {
     public class MedicalHistoryDto

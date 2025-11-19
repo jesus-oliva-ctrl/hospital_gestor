@@ -1,23 +1,23 @@
 {
   "Files": [
     {
-      "Id": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/HospitalWeb.bundle.scp.css",
+      "Id": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/projectbundle/HospitalWeb.bundle.scp.css",
       "PackagePath": "staticwebassets/HospitalWeb.bundle.scp.css"
     },
     {
-      "Id": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/app.css",
+      "Id": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/app.css",
       "PackagePath": "staticwebassets/app.css"
     },
     {
-      "Id": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css",
+      "Id": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css",
       "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css"
     },
     {
-      "Id": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css.map",
+      "Id": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/bootstrap/bootstrap.min.css.map",
       "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css.map"
     },
     {
-      "Id": "/mnt/night_projects/UCB/hospital_system/HospitalWeb/wwwroot/favicon.png",
+      "Id": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/favicon.png",
       "PackagePath": "staticwebassets/favicon.png"
     },
     {
