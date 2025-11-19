@@ -3,7 +3,7 @@ using HospitalData.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq; // Necesario para el método .Join
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace HospitalData.Services
@@ -37,7 +37,6 @@ namespace HospitalData.Services
             ");
         }
 
-        // --- MÉTODOS DE GESTIÓN DE PACIENTES ---
         public async Task<List<Patient>> ObtenerPacientesAsync()
         {
             return await _context.Patients.ToListAsync();
@@ -120,4 +119,6 @@ namespace HospitalData.Services
                                 .ToListAsync();
         }
     }
+
+    
 }

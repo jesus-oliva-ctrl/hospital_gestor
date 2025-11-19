@@ -13,13 +13,10 @@
 
     <hr />
 
-    @* SECCIÓN PARA AÑADIR UN NUEVO DOCTOR *@
     <h4>Registrar Nuevo Doctor</h4>
 
-    @* EditForm es un componente de Blazor que nos ayuda a manejar formularios y validaciones. *@
     <EditForm Model="_nuevoDoctor" OnValidSubmit="HandleCrearDoctor" FormName="CrearDoctorForm">
-        <DataAnnotationsValidator /> @* Activa la validación basada en los atributos del DTO *@
-
+        <DataAnnotationsValidator /> 
         <div class="card" style="width: 32rem;">
             <div class="card-body">
                 <div class="mb-3">
@@ -64,7 +61,6 @@
 
     <hr />
 
-    @* SECCIÓN PARA MOSTRAR LA LISTA DE DOCTORES *@
     <h4>Doctores Registrados</h4>
     @if (_listaDoctores == null)
     {
@@ -106,13 +102,11 @@
     private string? _errorMessage;
     private string? _successMessage;
 
-    // Se ejecuta cuando la página se carga por primera vez.
     protected override async Task OnInitializedAsync()
     {
         await CargarDoctores();
     }
 
-    // Método para manejar el envío del formulario.
     private async Task HandleCrearDoctor()
     {
         _errorMessage = null;
@@ -122,8 +116,8 @@
         {
             await StaffService.CrearDoctorAsync(_nuevoDoctor);
             _successMessage = "¡Doctor creado exitosamente!";
-            _nuevoDoctor = new(); // Resetea el formulario
-            await CargarDoctores(); // Recarga la lista para mostrar el nuevo doctor
+            _nuevoDoctor = new(); 
+            await CargarDoctores(); 
         }
         catch (Exception ex)
         {
@@ -131,7 +125,6 @@
         }
     }
 
-    // Helper para no repetir código.
     private async Task CargarDoctores()
     {
         try

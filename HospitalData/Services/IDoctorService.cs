@@ -20,9 +20,6 @@ namespace HospitalData.Services
         Task ScheduleNewAppointmentAsync(ScheduleAppointmentDto dto);
         Task RescheduleAppointmentAsync(int oldAppointmentId, ScheduleAppointmentDto newAppointmentDto);
         Task <int> GetMyDoctorIdAsync(int loggedInUserId);
-        
-        //Tarea que me de mi calendario de disponibilidad
-
 
     }
 }

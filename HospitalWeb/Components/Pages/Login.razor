@@ -38,30 +38,26 @@
 
     private async Task HandleLogin()
     {
-        _errorMessage = null; // Limpiar errores previos
+        _errorMessage = null; 
         try
         {
             var user = await AuthService.LoginAsync(_username, _password);
 
             if (user != null)
             {
-                // ¡Login exitoso!
-                // Por ahora, solo redirigiremos a la página principal.
-                // En el futuro, aquí guardaríamos la sesión del usuario.
+
                 SessionService.Login(user);
                 NavigationManager.NavigateTo("/");
             }
             else
             {
-                // Credenciales inválidas
                 _errorMessage = "Usuario o contraseña incorrectos.";
             }
         }
         catch (Exception ex)
         {
-            // Error de conexión u otro problema
             _errorMessage = "Ocurrió un error al intentar iniciar sesión.";
-            Console.WriteLine(ex.Message); // Log para el desarrollador
+            Console.WriteLine(ex.Message); 
         }
     }
 }
