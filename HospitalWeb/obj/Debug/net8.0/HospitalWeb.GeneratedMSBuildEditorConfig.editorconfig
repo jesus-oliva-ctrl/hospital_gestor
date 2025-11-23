@@ -22,6 +22,10 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/AgendarCita.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZ2VuZGFyQ2l0YS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/CalendarioCitas.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DYWxlbmRhcmlvQ2l0YXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -64,6 +68,14 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/Login.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Mb2dpbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/MisCitas.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NaXNDaXRhcy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/MisRecetas.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NaXNSZWNldGFzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/PanelDoctor.razor]

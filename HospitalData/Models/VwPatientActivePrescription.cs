@@ -18,4 +18,7 @@ public partial class VwPatientActivePrescription
     public DateOnly? StartDate { get; set; }
 
     public DateOnly? EndDate { get; set; }
+    public string DoctorFirstName { get; set; } = null!;
+
+    public string DoctorLastName { get; set; } = null!;
 }

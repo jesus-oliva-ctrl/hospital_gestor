@@ -1,0 +1,148 @@
+@page "/mis-citas"
+@using HospitalData.Models
+@using HospitalData.Services
+@using HospitalWeb.Components.Shared
+@inject IPatientService PatientService
+@inject UserSessionService SessionService
+
+<PageTitle>Mis Citas</PageTitle>
+
+<Autorizacion RolRequerido="Paciente">
+    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Mis Próximas Citas</h3>
+        <a href="agendar-cita" class="btn btn-success btn-sm">
+            <i class="bi bi-plus-circle"></i> Nueva Cita
+        </a>
+    </div>
+
+    <p>Consulta el historial y estado de tus citas médicas.</p>
+    <hr />
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-content-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando citas...</span>
+            </div>
+        </div>
+    }
+    else if (_myAppointments == null || !_myAppointments.Any())
+    {
+        <div class="alert alert-info d-flex align-items-center">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <div>
+                No tienes citas programadas actualmente. 
+                <a href="agendar-cita" class="alert-link">¡Agenda una ahora!</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive shadow-sm rounded">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Doctor</th>
+                        <th>Especialidad</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cita in _myAppointments)
+                    {
+                        <tr>
+                            <td>
+                                <i class="bi bi-calendar-event text-muted me-1"></i>
+                                @cita.AppointmentDate.ToString("f")
+                            </td>
+                            <td>
+                                <strong>Dr. @cita.DoctorFirstName @cita.DoctorLastName</strong>
+                            </td>
+                            <td>
+                                <span class="text-muted">@cita.DoctorSpecialty</span>
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill @GetBadgeClass(cita.Status)">
+                                    @cita.Status
+                                </span>
+                            </td>
+                            <td>
+                                @if (cita.Status == "Programada")
+                                {
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            @onclick="() => HandleCancelAppointment(cita.AppointmentId)">
+                                        <i class="bi bi-x-circle"></i> Cancelar
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+</Autorizacion>
+
+@code {
+    private List<VwPatientAppointment>? _myAppointments;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var usuarioActual = SessionService.CurrentUser;
+
+        if (usuarioActual != null && usuarioActual.RoleName == "Paciente")
+        {
+            try
+            {
+                _isLoading = true;
+                
+                int patientId = await PatientService.GetPatientIdByUserIdAsync(usuarioActual.UserID);
+                
+                _myAppointments = await PatientService.GetMyAppointmentsAsync(patientId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error cargando citas: {ex.Message}");
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+    }
+    private string GetBadgeClass(string status) => status switch
+    {
+        "Programada" => "bg-primary",
+        "Completada" => "bg-success",
+        "Cancelada" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    private async Task HandleCancelAppointment(int appointmentId)
+    {        
+        var currentUser = SessionService.CurrentUser;
+        if (currentUser == null) return;
+
+        try
+        {
+            _isLoading = true; 
+            await PatientService.CancelAppointmentAsync(appointmentId);
+            
+            int patientId = await PatientService.GetPatientIdByUserIdAsync(currentUser.UserID);
+            _myAppointments = await PatientService.GetMyAppointmentsAsync(patientId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cancelar: {ex.Message}");
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

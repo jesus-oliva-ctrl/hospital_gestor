@@ -1,0 +1,98 @@
+@page "/mis-recetas"
+@using HospitalData.Models
+@using HospitalData.Services
+@inject IPatientService PatientService
+@inject UserSessionService SessionService
+
+<PageTitle>Mis Recetas</PageTitle>
+
+<Autorizacion RolRequerido="Paciente">
+    
+    <h3><i class="bi bi-capsule-pill text-primary"></i> Mis Prescripciones Activas</h3>
+    <p>Listado de medicamentos recetados y vigentes.</p>
+    <hr />
+
+    @if (_isLoading)
+    {
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando recetas...</span>
+            </div>
+        </div>
+    }
+    else if (_myPrescriptions == null || !_myPrescriptions.Any())
+    {
+        <div class="alert alert-success d-flex align-items-center shadow-sm">
+            <i class="bi bi-check-circle-fill me-3 fs-4"></i>
+            <div>No tienes prescripciones activas en este momento.</div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var receta in _myPrescriptions)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-primary bg-gradient text-white">
+                            <h5 class="card-title mb-0">
+                                @receta.MedicationName
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                <strong>Dosis:</strong> @receta.Dosage
+                            </p>
+                            <p class="card-text">
+                                <strong>Cantidad:</strong> @receta.QuantityToDispense unidades
+                            </p>
+                            <p class="card-text text-muted small">
+                                <i class="bi bi-person-fill"></i> Recetado por: Dr. @receta.DoctorFirstName @receta.DoctorLastName
+                            </p>
+                        </div>
+                        <div class="card-footer bg-light border-top-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Válido hasta: <strong>@receta.EndDate?.ToString("d")</strong>
+                                </small>
+                                
+                                @if (receta.EndDate.HasValue && 
+                                     (receta.EndDate.Value.ToDateTime(TimeOnly.MinValue) - DateTime.Now).TotalDays < 3)
+                                {
+                                    <span class="badge bg-warning text-dark">Vence pronto</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</Autorizacion>
+
+@code {
+    private List<VwPatientActivePrescription>? _myPrescriptions;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.CurrentUser?.RoleName == "Paciente")
+        {
+            try
+            {
+                _isLoading = true;
+                int patientId = await PatientService.GetPatientIdByUserIdAsync(SessionService.CurrentUser.UserID);
+                
+                _myPrescriptions = await PatientService.GetMyPrescriptionsAsync(patientId);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+    }
+}

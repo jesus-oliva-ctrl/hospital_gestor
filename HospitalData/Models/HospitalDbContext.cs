@@ -42,6 +42,8 @@ public partial class HospitalDbContext : DbContext
 
     public virtual DbSet<VwPatientActivePrescription> VwPatientActivePrescriptions { get; set; }
 
+    public virtual DbSet<VwPatientAppointment> VwPatientAppointments { get; set; }
+
     public virtual DbSet<AuthenticatedUser> AuthenticatedUsers { get; set; }
     public virtual DbSet<AppointmentDetailDto> StaffAppointmentManagementView { get; set; }
 
@@ -286,6 +288,7 @@ public partial class HospitalDbContext : DbContext
             entity.Property(e => e.Status).HasMaxLength(50);
 
         });
+
         modelBuilder.Entity<VwPatientActivePrescription>(entity =>
         {
             entity
@@ -296,8 +299,15 @@ public partial class HospitalDbContext : DbContext
             entity.Property(e => e.MedicationName).HasMaxLength(100);
             entity.Property(e => e.PatientId).HasColumnName("PatientID");
             entity.Property(e => e.PrescriptionId).HasColumnName("PrescriptionID");
+            entity.Property(e => e.DoctorFirstName).HasMaxLength(100);
+            entity.Property(e => e.DoctorLastName).HasMaxLength(100);
         });
 
+        modelBuilder.Entity<VwPatientAppointment>(entity =>
+        {
+            entity.HasNoKey();
+            entity.ToView("VW_PatientAppointments");
+        });
 
         modelBuilder.Entity<AuthenticatedUser>().HasNoKey();
         

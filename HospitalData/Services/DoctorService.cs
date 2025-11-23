@@ -11,10 +11,14 @@ namespace HospitalData.Services
     public class DoctorService : IDoctorService
     {
         private readonly HospitalDbContext _context;
+        private readonly IAppointmentManagementService _appointmentService;
+        private readonly IPrescriptionManagementService _prescriptionService;
 
-        public DoctorService(HospitalDbContext context)
+        public DoctorService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService)
         {
             _context = context;
+            _appointmentService = appointmentService;
+            _prescriptionService = prescriptionService;
         }
 
         public async Task<List<VwDoctorAgendaSummary>> GetMyAgendaAsync(int loggedInUserId)
@@ -67,8 +71,7 @@ namespace HospitalData.Services
 
         public async Task CancelAppointmentAsync(int appointmentId)
         {
-            await _context.Database.ExecuteSqlInterpolatedAsync(
-                $"EXEC SP_CancelAppointment @AppointmentID={appointmentId}");
+            await _appointmentService.CancelAppointmentAsync(appointmentId);
         }
 
         public async Task<List<MedicalHistoryDto>> GetMyMedicalHistoryAsync(int loggedInUserId)
@@ -116,53 +119,22 @@ namespace HospitalData.Services
 
         public async Task<List<Prescription>> GetPrescriptionsForPatientAsync(int patientId)
         {
-            return await _context.Prescriptions
-                                 .Include(p => p.Medication)
-                                 .Where(p => p.PatientId == patientId)
-                                 .OrderByDescending(p => p.StartDate)
-                                 .ToListAsync();
+            return await _prescriptionService.GetPrescriptionsForPatientAsync(patientId);
         }
 
         public async Task CreatePrescriptionAsync(CreatePrescriptionDto dto)
         {
-            try
-            {
-                await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                EXEC SP_IssueNewPrescription
-                    @PatientID = {dto.PatientID},
-                    @DoctorID = {dto.DoctorID},
-                    @MedicationID = {dto.MedicationID},
-                    @Dosage = {dto.Dosage},
-                    @QuantityToDispense = {dto.QuantityToDispense},
-                    @EndDate = {dto.EndDate}
-            ");
-            }
-            catch (Microsoft.Data.SqlClient.SqlException ex) when (ex.Number == 50001)
-            {
-                throw new Exception("Error: No hay suficiente stock del medicamento seleccionado.");
-            }
+            await _prescriptionService.CreatePrescriptionAsync(dto);
         }
         public async Task ScheduleNewAppointmentAsync(ScheduleAppointmentDto dto)
         {
-            try
-            {
-                await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                    EXEC SP_ScheduleAppointment
-                        @PatientID = {dto.PatientID},
-                        @DoctorID = {dto.DoctorID},
-                        @AppointmentDate = {dto.AppointmentDate}
-                ");
-            }
-            catch (Microsoft.Data.SqlClient.SqlException ex)
-            {
-                throw new Exception($"Error al agendar: {ex.Message}");
-            }
+            await _appointmentService.ScheduleAppointmentAsync(dto);
         }
 
         public async Task RescheduleAppointmentAsync(int oldAppointmentId, ScheduleAppointmentDto newAppointmentDto)
         {
-            await CancelAppointmentAsync(oldAppointmentId);
-            await ScheduleNewAppointmentAsync(newAppointmentDto);
+            await _appointmentService.CancelAppointmentAsync(oldAppointmentId);
+            await _appointmentService.ScheduleAppointmentAsync(newAppointmentDto);
         }
 
         public async Task<int> GetMyDoctorIdAsync(int loggedInUserId)

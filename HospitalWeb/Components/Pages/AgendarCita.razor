@@ -1,0 +1,136 @@
+@page "/agendar-cita"
+@using HospitalData.Models
+@using HospitalData.Services
+@using HospitalData.DTOs
+@using HospitalWeb.Components.Shared
+@inject IPatientService PatientService
+@inject UserSessionService SessionService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Agendar Cita</PageTitle>
+
+<Autorizacion RolRequerido="Paciente">
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-calendar-plus"></i> Nueva Cita Médica</h4>
+                </div>
+                <div class="card-body">
+                    
+                    <EditForm Model="_newAppointment" OnValidSubmit="HandleScheduleAppointment">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Médico Especialista:</label>
+                            
+                            @if (_doctorsList == null)
+                            {
+                                <div class="text-muted">Cargando médicos...</div>
+                            }
+                            else
+                            {
+                                <InputSelect class="form-select" @bind-Value="_newAppointment.DoctorID">
+                                    <option value="0">-- Seleccione un médico --</option>
+                                    @foreach (var doc in _doctorsList)
+                                    {
+                                        <option value="@doc.DoctorId">
+                                            Dr. @doc.LastName @doc.FirstName - @(doc.Specialty?.SpecialtyName ?? "General")
+                                        </option>
+                                    }
+                                </InputSelect>
+                            }
+                            <ValidationMessage For="@(() => _newAppointment.DoctorID)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fecha y Hora Deseada:</label>
+                            <InputDate @bind-Value="_newAppointment.AppointmentDate" 
+                                       class="form-control" 
+                                       Type="InputDateType.DateTimeLocal" 
+                                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                            <ValidationMessage For="@(() => _newAppointment.AppointmentDate)" />
+                            <div class="form-text">Los horarios están sujetos a disponibilidad del médico.</div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <div class="alert alert-danger">
+                                <i class="bi bi-exclamation-triangle-fill"></i> @_errorMessage
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(_successMessage))
+                        {
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle-fill"></i> @_successMessage
+                            </div>
+                        }
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">Confirmar Cita</button>
+                            <a href="mis-citas" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</Autorizacion>
+
+@code {
+    private ScheduleAppointmentDto _newAppointment = new();
+    private List<Doctor>? _doctorsList;
+    private int _patientId;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.CurrentUser?.RoleName == "Paciente")
+        {
+            try
+            {
+                _patientId = await PatientService.GetPatientIdByUserIdAsync(SessionService.CurrentUser.UserID);
+                
+                _doctorsList = await PatientService.GetActiveDoctorsAsync();
+                
+                _newAppointment.PatientID = _patientId;
+
+                _newAppointment.AppointmentDate = DateTime.Now.AddDays(1).Date.AddHours(9);
+            }
+            catch (Exception ex)
+            {
+                _errorMessage = "Error al cargar datos: " + ex.Message;
+            }
+        }
+    }
+
+    private async Task HandleScheduleAppointment()
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (_newAppointment.DoctorID <= 0)
+        {
+            _errorMessage = "Por favor, seleccione un médico de la lista.";
+            return;
+        }
+
+        try
+        {
+            await PatientService.ScheduleAppointmentAsync(_newAppointment);
+            
+            _successMessage = "¡Cita agendada exitosamente! Redirigiendo...";
+            
+            await Task.Delay(2000); 
+            NavigationManager.NavigateTo("/mis-citas");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+}
