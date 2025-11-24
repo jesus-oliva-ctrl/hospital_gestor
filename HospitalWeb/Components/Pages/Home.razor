@@ -1,7 +1,78 @@
 ﻿@page "/"
+@using HospitalData.Services
+@inject UserSessionService SessionService
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Inicio</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudText Typo="Typo.h3" GutterBottom="true" Color="Color.Primary">Bienvenido a Hospital Gestor</MudText>
 
-Welcome to your new app.
+@if (SessionService.CurrentUser == null)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+        Por favor, inicia sesión para acceder a tus servicios.
+    </MudAlert>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" Href="login">Ir al Login</MudButton>
+}
+else
+{
+    <MudText Typo="Typo.h5" Class="mb-4">Hola, @SessionService.CurrentUser.UserID</MudText>
+    
+    <MudGrid>
+        @if (SessionService.CurrentUser.RoleName == "Paciente")
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Secondary" Icon="@Icons.Material.Filled.Event" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">Próxima Cita</MudText>
+                            <MudText Typo="Typo.body2">Consulta tus horarios</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Secondary" Href="mis-citas">Ver Citas</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="hover-card">
+                     <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Primary" Icon="@Icons.Material.Filled.Add" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">Nueva Cita</MudText>
+                            <MudText Typo="Typo.body2">Agenda con un especialista</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="agendar-cita">Agendar</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+
+        @if (SessionService.CurrentUser.RoleName == "Medico")
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Info" Icon="@Icons.Material.Filled.Today" />
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">Mi Agenda Hoy</MudText>
+                            <MudText Typo="Typo.body2">Revisa tus pacientes</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" Color="Color.Info" Href="panel-doctor">Ir al Panel</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}

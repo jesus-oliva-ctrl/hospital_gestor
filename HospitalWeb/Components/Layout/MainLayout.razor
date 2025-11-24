@@ -15,9 +15,9 @@
         
         @if (SessionService.CurrentUser != null)
         {
-            <MudMenu Label="@SessionService.CurrentUser.RoleName" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.AccountCircle">
-                <MudMenuItem Href="mi-perfil">Mi Perfil</MudMenuItem>
-                <MudMenuItem OnClick="Logout">Cerrar Sesión</MudMenuItem>
+            <MudMenu Label="@SessionService.CurrentUser.RoleName" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.AccountCircle" EndIcon="@Icons.Material.Filled.KeyboardArrowDown">
+                <MudMenuItem Href="mi-perfil" Icon="@Icons.Material.Filled.Person">Mi Perfil</MudMenuItem>
+                <MudMenuItem OnClick="Logout" Icon="@Icons.Material.Filled.Logout">Cerrar Sesión</MudMenuItem>
             </MudMenu>
         }
         else
@@ -27,7 +27,7 @@
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
-        <NavMenu /> 
+        <NavMenu />
     </MudDrawer>
 
     <MudMainContent>
@@ -44,10 +44,10 @@
     {
         PaletteLight = new PaletteLight()
         {
-            Primary = "#1E88E5", 
-            Secondary = "#26A69A", 
-            AppbarBackground = "#1E88E5",
-            Background = "#F5F5F5" 
+            Primary = "#0078D4", 
+            Secondary = "#2b8a3e", 
+            AppbarBackground = "#0078D4",
+            Background = "#f5f8fa" 
         }
     };
 

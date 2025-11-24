@@ -2,105 +2,83 @@
 @using HospitalData.Models
 @using HospitalData.Services
 @using HospitalData.DTOs
+@using HospitalWeb.Components.Shared
 @inject IStaffService StaffService
+@inject ISnackbar Snackbar
 
 <PageTitle>Gestión de Doctores</PageTitle>
 
 <Autorizacion RolRequerido="Administrativo">
 
-    <h1>Gestión de Doctores</h1>
-    <p>Desde aquí puedes ver la lista de doctores existentes y registrar nuevos en el sistema.</p>
+    <MudText Typo="Typo.h4" Class="mb-4">Directorio Médico</MudText>
 
-    <hr />
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        
+        <MudTabPanel Text="Lista de Doctores" Icon="@Icons.Material.Filled.List">
+            <MudTable Items="@_listaDoctores" Dense="true" Hover="true" Bordered="true" Striped="true" Filter="new Func<Doctor,bool>(FilterFunc1)">
+                <ToolBarContent>
+                    <MudText Typo="Typo.h6">Doctores Registrados</MudText>
+                    <MudSpacer />
+                    <MudTextField @bind-Value="searchString1" Placeholder="Buscar por nombre..." Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>ID</MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Doctor, object>(x=>x.FirstName)">Nombre</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Doctor, object>(x=>x.LastName)">Apellido</MudTableSortLabel></MudTh>
+                    <MudTh>Teléfono</MudTh>
+                    <MudTh>Especialidad</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="ID">@context.DoctorId</MudTd>
+                    <MudTd DataLabel="Nombre">@context.FirstName</MudTd>
+                    <MudTd DataLabel="Apellido">@context.LastName</MudTd>
+                    <MudTd DataLabel="Teléfono">@context.Phone</MudTd>
+                    <MudTd DataLabel="Especialidad">@context.Specialty?.SpecialtyName</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
 
-    <h4>Registrar Nuevo Doctor</h4>
-
-    <EditForm Model="_nuevoDoctor" OnValidSubmit="HandleCrearDoctor" FormName="CrearDoctorForm">
-        <DataAnnotationsValidator /> 
-        <div class="card" style="width: 32rem;">
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Nombres:</label>
-                    <InputText class="form-control" @bind-Value="_nuevoDoctor.FirstName" />
-                    <ValidationMessage For="@(() => _nuevoDoctor.FirstName)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Apellidos:</label>
-                    <InputText class="form-control" @bind-Value="_nuevoDoctor.LastName" />
-                    <ValidationMessage For="@(() => _nuevoDoctor.LastName)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Email:</label>
-                    <InputText type="email" class="form-control" @bind-Value="_nuevoDoctor.Email" />
-                    <ValidationMessage For="@(() => _nuevoDoctor.Email)" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Teléfono (Opcional):</label>
-                    <InputText class="form-control" @bind-Value="_nuevoDoctor.Phone" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">ID de Especialidad:</label>
-                    <InputNumber class="form-control" @bind-Value="_nuevoDoctor.SpecialtyID" />
-                    <ValidationMessage For="@(() => _nuevoDoctor.SpecialtyID)" />
-                </div>
-
-                <button type="submit" class="btn btn-primary">Crear Doctor</button>
-                <p class="form-text mt-2">El nuevo usuario se creará con la contraseña por defecto: "defaultpassword".</p>
-            </div>
-        </div>
-    </EditForm>
-
-    @if (!string.IsNullOrEmpty(_successMessage))
-    {
-        <div class="alert alert-success mt-3">@_successMessage</div>
-    }
-    @if (!string.IsNullOrEmpty(_errorMessage))
-    {
-        <div class="alert alert-danger mt-3">@_errorMessage</div>
-    }
-
-    <hr />
-
-    <h4>Doctores Registrados</h4>
-    @if (_listaDoctores == null)
-    {
-        <p><em>Cargando lista de doctores...</em></p>
-    }
-    else
-    {
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Teléfono</th>
-                    <th>Especialidad</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var doctor in _listaDoctores)
-                {
-                    <tr>
-                        <td>@doctor.DoctorId</td>
-                        <td>@doctor.FirstName</td>
-                        <td>@doctor.LastName</td>
-                        <td>@doctor.Phone</td>
-                        <td>@doctor.Specialty?.SpecialtyName</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+        <MudTabPanel Text="Registrar Nuevo" Icon="@Icons.Material.Filled.PersonAdd">
+            <MudCard>
+                <MudCardContent>
+                    <MudForm @ref="form" @bind-IsValid="@success">
+                        <MudGrid>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_nuevoDoctor.FirstName" Label="Nombres" Required="true"/>
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_nuevoDoctor.LastName" Label="Apellidos" Required="true"/>
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_nuevoDoctor.Email" Label="Email" InputType="InputType.Email" Required="true"/>
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_nuevoDoctor.Phone" Label="Teléfono"/>
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudNumericField @bind-Value="_nuevoDoctor.SpecialtyID" Label="ID Especialidad" Min="1" Required="true"/>
+                            </MudItem>
+                        </MudGrid>
+                    </MudForm>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleCrearDoctor" Disabled="@(!success)">Registrar Doctor</MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudTabPanel>
+    </MudTabs>
 
 </Autorizacion>
-
 
 @code {
     private List<Doctor>? _listaDoctores;
     private CreateDoctorDto _nuevoDoctor = new();
-    private string? _errorMessage;
-    private string? _successMessage;
+    private string searchString1 = "";
+    private bool success;
+    private MudForm form;
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,31 +87,32 @@
 
     private async Task HandleCrearDoctor()
     {
-        _errorMessage = null;
-        _successMessage = null;
-
         try
         {
             await StaffService.CrearDoctorAsync(_nuevoDoctor);
-            _successMessage = "¡Doctor creado exitosamente!";
-            _nuevoDoctor = new(); 
-            await CargarDoctores(); 
+            Snackbar.Add("Doctor creado exitosamente", Severity.Success);
+            _nuevoDoctor = new();
+            await CargarDoctores();
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Error al crear el doctor: {ex.Message}";
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
 
     private async Task CargarDoctores()
     {
-        try
-        {
-            _listaDoctores = await StaffService.ObtenerDoctoresAsync();
-        }
-        catch (Exception ex)
-        {
-            _errorMessage = $"No se pudo cargar la lista de doctores: {ex.Message}";
-        }
+        _listaDoctores = await StaffService.ObtenerDoctoresAsync();
+    }
+
+    private bool FilterFunc1(Doctor element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(Doctor element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (element.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if ($"{element.FirstName} {element.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        return false;
     }
 }

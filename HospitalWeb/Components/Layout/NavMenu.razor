@@ -1,124 +1,51 @@
 ﻿@using HospitalData.Services
 @inject UserSessionService SessionService
-@inject NavigationManager NavigationManager
-@implements IDisposable
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">HospitalWeb</a>
-    </div>
-</div>
+<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Inicio</MudNavLink>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+    @if (SessionService.CurrentUser != null)
+    {
+        var rol = SessionService.CurrentUser.RoleName;
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        @if (SessionService.CurrentUser != null)
+        @if (rol == "Administrativo")
         {
-            @if (SessionService.CurrentUser.RoleName == "Administrativo")
-            {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="gestion-doctores">
-                        <span class="bi bi-person-rolodex" aria-hidden="true"></span> Doctores
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="gestion-pacientes">
-                        <span class="bi bi-people-fill" aria-hidden="true"></span> Pacientes
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="gestion-inventario">
-                        <span class="bi bi-capsule" aria-hidden="true"></span> Inventario
-                    </NavLink>
-                </div>
+            <MudNavGroup Title="Administración" Icon="@Icons.Material.Filled.AdminPanelSettings" Expanded="true">
+                <MudNavLink Href="gestion-doctores" Icon="@Icons.Material.Filled.MedicalServices">Doctores</MudNavLink>
+                <MudNavLink Href="gestion-pacientes" Icon="@Icons.Material.Filled.People">Pacientes</MudNavLink>
+                <MudNavLink Href="gestion-inventario" Icon="@Icons.Material.Filled.Inventory">Inventario</MudNavLink>
+                <MudNavLink Href="calendario-citas" Icon="@Icons.Material.Filled.CalendarMonth">Calendario General</MudNavLink>
+            </MudNavGroup>
+        }
 
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="calendario-citas">
-                        <span class="bi bi-calendar-week" aria-hidden="true"></span> Citas
-                    </NavLink>
-                </div>
-            }
-            @if (SessionService.CurrentUser.RoleName == "Medico")
-            {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mi-perfil">
-                        <span class="bi bi-person-gear" aria-hidden="true"></span> Mi Perfil
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="panel-doctor">
-                        <span class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></span> Panel Doctor
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="historial-consultas">
-                        <span class="bi bi-archive-fill" aria-hidden="true"></span> Historial
-                    </NavLink>
-                </div>
-            }
-            @if (SessionService.CurrentUser.RoleName == "Paciente")
-            {
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mi-perfil">
-                        <span class="bi bi-person-gear" aria-hidden="true"></span> Mi Perfil
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mis-citas">
-                        <span class="bi bi-calendar-check" aria-hidden="true"></span> Mis Citas
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="agendar-cita">
-                        <span class="bi bi-plus-circle-dotted" aria-hidden="true"></span> Agendar Cita
-                    </NavLink>
-                </div>
-                <div class="nav-item px-3">
-                    <NavLink class="nav-link" href="mis-recetas">
-                        <span class="bi bi-capsule" aria-hidden="true"></span> Mis Recetas
-                    </NavLink>
-                </div>
-            }
-            <div class="nav-item px-3">
-                <span class="nav-lisnk text-white">
-                    <span class="bi bi-person-circle" aria-hidden="true"></span>
-                    Bienvenido, <strong>@SessionService.CurrentUser.RoleName</strong>
-                </span>
-            </div>
-            <div class="nav-item px-3">
-                <button class="btn btn-link nav-link" @onclick="Logout">
-                    <span class="bi bi-box-arrow-right" aria-hidden="true"></span> Cerrar Sesión
-                </button>
-            </div>
-        }
-        else
+        @if (rol == "Medico")
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="login">
-                    <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> Login
-                </NavLink>
-            </div>
+            <MudNavGroup Title="Consultorio" Icon="@Icons.Material.Filled.HealthAndSafety" Expanded="true">
+                <MudNavLink Href="panel-doctor" Icon="@Icons.Material.Filled.AssignmentInd">Mi Agenda</MudNavLink>
+                <MudNavLink Href="historial-consultas" Icon="@Icons.Material.Filled.History">Historial Consultas</MudNavLink>
+            </MudNavGroup>
         }
-    </nav>
-</div>
+
+        @if (rol == "Paciente")
+        {
+            <MudNavGroup Title="Mi Salud" Icon="@Icons.Material.Filled.Favorite" Expanded="true">
+                <MudNavLink Href="mis-citas" Icon="@Icons.Material.Filled.Event">Mis Citas</MudNavLink>
+                <MudNavLink Href="agendar-cita" Icon="@Icons.Material.Filled.AddCircleOutline">Agendar Cita</MudNavLink>
+                <MudNavLink Href="mis-recetas" Icon="@Icons.Material.Filled.Medication">Mis Recetas</MudNavLink>
+                <MudNavLink Href="mi-historial" Icon="@Icons.Material.Filled.Description">Expediente Clínico</MudNavLink>
+            </MudNavGroup>
+        }
+    }
+    else
+    {
+        <MudNavLink Href="login" Icon="@Icons.Material.Filled.Login">Iniciar Sesión</MudNavLink>
+    }
+</MudNavMenu>
 
 @code {
     protected override void OnInitialized()
     {
         SessionService.OnChange += StateHasChanged;
-    }
-
-    private void Logout()
-    {
-        SessionService.Logout();
-        NavigationManager.NavigateTo("/login");
     }
 
     public void Dispose()
