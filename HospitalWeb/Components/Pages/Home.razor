@@ -8,48 +8,105 @@
 
 @if (SessionService.CurrentUser == null)
 {
-    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-        Por favor, inicia sesión para acceder a tus servicios.
-    </MudAlert>
-    <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="mt-4" Href="login">Ir al Login</MudButton>
+    <MudPaper Elevation="2" Class="pa-6 mt-4">
+        <MudStack Spacing="3" AlignItems="AlignItems.Center">
+            <MudIcon Icon="@Icons.Material.Filled.LocalHospital" 
+                     Color="Color.Primary" 
+                     Size="Size.Large" 
+                     Style="font-size: 80px;" />
+            <MudText Typo="Typo.h5" Align="Align.Center">
+                Sistema de Gestión Hospitalaria
+            </MudText>
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                Por favor, inicia sesión para acceder a tus servicios.
+            </MudAlert>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       Size="Size.Large"
+                       Href="login"
+                       StartIcon="@Icons.Material.Filled.Login">
+                Ir al Login
+            </MudButton>
+        </MudStack>
+    </MudPaper>
 }
 else
 {
-    <MudText Typo="Typo.h5" Class="mb-4">Hola, @SessionService.CurrentUser.UserID</MudText>
+    <MudText Typo="Typo.h5" Class="mb-4">
+        Hola, <strong>@SessionService.CurrentUser.RoleName</strong>
+    </MudText>
     
     <MudGrid>
         @if (SessionService.CurrentUser.RoleName == "Paciente")
         {
             <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="hover-card">
+                <MudCard Elevation="2" Class="hover-card">
                     <MudCardHeader>
                         <CardHeaderAvatar>
-                            <MudAvatar Color="Color.Secondary" Icon="@Icons.Material.Filled.Event" />
+                            <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.Event" />
+                            </MudAvatar>
                         </CardHeaderAvatar>
                         <CardHeaderContent>
-                            <MudText Typo="Typo.body1">Próxima Cita</MudText>
+                            <MudText Typo="Typo.h6">Mis Citas</MudText>
                             <MudText Typo="Typo.body2">Consulta tus horarios</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Secondary" Href="mis-citas">Ver Citas</MudButton>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Secondary" 
+                                   Href="mis-citas"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Ver Citas
+                        </MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
             
             <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="hover-card">
+                <MudCard Elevation="2" Class="hover-card">
                      <MudCardHeader>
                         <CardHeaderAvatar>
-                            <MudAvatar Color="Color.Primary" Icon="@Icons.Material.Filled.Add" />
+                            <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.AddCircleOutline" />
+                            </MudAvatar>
                         </CardHeaderAvatar>
                         <CardHeaderContent>
-                            <MudText Typo="Typo.body1">Nueva Cita</MudText>
+                            <MudText Typo="Typo.h6">Nueva Cita</MudText>
                             <MudText Typo="Typo.body2">Agenda con un especialista</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Primary" Href="agendar-cita">Agendar</MudButton>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Primary" 
+                                   Href="agendar-cita"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Agendar
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="hover-card">
+                     <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Success" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.Medication" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Mis Recetas</MudText>
+                            <MudText Typo="Typo.body2">Revisa tus medicamentos</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Success" 
+                                   Href="mis-recetas"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Ver Recetas
+                        </MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
@@ -58,21 +115,156 @@ else
         @if (SessionService.CurrentUser.RoleName == "Medico")
         {
             <MudItem xs="12" sm="6" md="4">
-                <MudCard Class="hover-card">
+                <MudCard Elevation="2" Class="hover-card">
                     <MudCardHeader>
                         <CardHeaderAvatar>
-                            <MudAvatar Color="Color.Info" Icon="@Icons.Material.Filled.Today" />
+                            <MudAvatar Color="Color.Info" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.Today" />
+                            </MudAvatar>
                         </CardHeaderAvatar>
                         <CardHeaderContent>
-                            <MudText Typo="Typo.body1">Mi Agenda Hoy</MudText>
+                            <MudText Typo="Typo.h6">Mi Agenda Hoy</MudText>
                             <MudText Typo="Typo.body2">Revisa tus pacientes</MudText>
                         </CardHeaderContent>
                     </MudCardHeader>
                     <MudCardActions>
-                        <MudButton Variant="Variant.Text" Color="Color.Info" Href="panel-doctor">Ir al Panel</MudButton>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Info" 
+                                   Href="panel-doctor"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Ir al Panel
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="2" Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.History" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Historial</MudText>
+                            <MudText Typo="Typo.body2">Consultas realizadas</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Secondary" 
+                                   Href="historial-consultas"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Ver Historial
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+
+        @if (SessionService.CurrentUser.RoleName == "Administrativo")
+        {
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Primary" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.MedicalServices" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Doctores</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Primary" 
+                                   Href="gestion-doctores"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Gestionar
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Secondary" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.People" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Pacientes</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Secondary" 
+                                   Href="gestion-pacientes"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Gestionar
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Success" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Inventario</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Success" 
+                                   Href="gestion-inventario"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Gestionar
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Elevation="2" Class="hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Info" Size="Size.Large">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Calendario</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Text" 
+                                   Color="Color.Info" 
+                                   Href="calendario-citas"
+                                   EndIcon="@Icons.Material.Filled.ArrowForward">
+                            Ver Citas
+                        </MudButton>
                     </MudCardActions>
                 </MudCard>
             </MudItem>
         }
     </MudGrid>
 }
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+    }
+</style>
