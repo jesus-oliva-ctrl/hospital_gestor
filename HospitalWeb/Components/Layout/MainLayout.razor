@@ -1,23 +1,59 @@
-﻿@inherits LayoutComponentBase
+﻿@using HospitalData.Services
+@inherits LayoutComponentBase
+@inject UserSessionService SessionService
+@inject NavigationManager NavigationManager
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<MudThemeProvider Theme="_currentTheme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => _drawerOpen = !_drawerOpen)" />
+        <MudText Typo="Typo.h6" Class="ml-3">Hospital Gestor</MudText>
+        <MudSpacer />
+        
+        @if (SessionService.CurrentUser != null)
+        {
+            <MudMenu Label="@SessionService.CurrentUser.RoleName" Color="Color.Inherit" StartIcon="@Icons.Material.Filled.AccountCircle">
+                <MudMenuItem Href="mi-perfil">Mi Perfil</MudMenuItem>
+                <MudMenuItem OnClick="Logout">Cerrar Sesión</MudMenuItem>
+            </MudMenu>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Text" Color="Color.Inherit" Href="login">Iniciar Sesión</MudButton>
+        }
+    </MudAppBar>
 
-        <article class="content px-4">
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu /> 
+    </MudDrawer>
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
-</div>
+@code {
+    bool _drawerOpen = true;
+    
+    private MudTheme _currentTheme = new MudTheme()
+    {
+        PaletteLight = new PaletteLight()
+        {
+            Primary = "#1E88E5", 
+            Secondary = "#26A69A", 
+            AppbarBackground = "#1E88E5",
+            Background = "#F5F5F5" 
+        }
+    };
+
+    private void Logout()
+    {
+        SessionService.Logout();
+        NavigationManager.NavigateTo("/login");
+    }
+}

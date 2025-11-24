@@ -146,3 +146,16 @@
 /mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/HospitalWeb.pdb
 /mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/HospitalWeb.genruntimeconfig.cache
 /mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/ref/HospitalWeb.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.AspNetCore.Authorization.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.AspNetCore.Components.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.AspNetCore.Components.Forms.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.AspNetCore.Components.Web.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.AspNetCore.Metadata.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.Localization.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.Localization.Abstractions.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.Logging.Abstractions.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.JSInterop.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/MudBlazor.dll

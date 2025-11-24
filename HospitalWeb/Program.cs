@@ -3,6 +3,7 @@ using HospitalData.Models;
 using Microsoft.EntityFrameworkCore;
 using HospitalData.Services;
 using HospitalData.DTOs;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,8 @@ builder.Services.AddRazorPages();
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalDB"))
 );
+
+builder.Services.AddMudServices();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 

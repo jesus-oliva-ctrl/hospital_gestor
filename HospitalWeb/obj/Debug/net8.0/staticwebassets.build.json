@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "a4x/J7UypMiro5kkrVAjPfZgl3ZYuYlSk6IIvnbh97s=",
+  "Hash": "U6M71fDn+lk4A0Xpy6TCy2yZA2aMR4PCj+R1i2JULfQ=",
   "Source": "HospitalWeb",
   "BasePath": "_content/HospitalWeb",
   "Mode": "Default",
@@ -16,6 +16,44 @@
     }
   ],
   "Assets": [
+    {
+      "Identity": "/home/night/.nuget/packages/mudblazor/8.15.0/staticwebassets/MudBlazor.min.css",
+      "SourceId": "MudBlazor",
+      "SourceType": "Package",
+      "ContentRoot": "/home/night/.nuget/packages/mudblazor/8.15.0/staticwebassets/",
+      "BasePath": "_content/MudBlazor",
+      "RelativePath": "MudBlazor.min.css",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/home/night/.nuget/packages/mudblazor/8.15.0/staticwebassets/MudBlazor.min.css"
+    },
+    {
+      "Identity": "/home/night/.nuget/packages/mudblazor/8.15.0/staticwebassets/MudBlazor.min.js",
+      "SourceId": "MudBlazor",
+      "SourceType": "Package",
+      "ContentRoot": "/home/night/.nuget/packages/mudblazor/8.15.0/staticwebassets/",
+      "BasePath": "_content/MudBlazor",
+      "RelativePath": "MudBlazor.min.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "/home/night/.nuget/packages/mudblazor/8.15.0/staticwebassets/MudBlazor.min.js"
+    },
     {
       "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/obj/Debug/net8.0/scopedcss/bundle/HospitalWeb.styles.css",
       "SourceId": "HospitalWeb",
