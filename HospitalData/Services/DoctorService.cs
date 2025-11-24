@@ -13,12 +13,14 @@ namespace HospitalData.Services
         private readonly HospitalDbContext _context;
         private readonly IAppointmentManagementService _appointmentService;
         private readonly IPrescriptionManagementService _prescriptionService;
+        private readonly IUserAccountService _userAccountService;
 
-        public DoctorService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService)
+        public DoctorService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService, IUserAccountService userAccountService)
         {
             _context = context;
             _appointmentService = appointmentService;
             _prescriptionService = prescriptionService;
+            _userAccountService = userAccountService;
         }
 
         public async Task<List<VwDoctorAgendaSummary>> GetMyAgendaAsync(int loggedInUserId)
@@ -149,6 +151,33 @@ namespace HospitalData.Services
             }
 
             return doctor.DoctorId;
+        }
+
+        public async Task<DoctorProfileDto> GetDoctorProfileAsync(int userId)
+        {
+            var doctor = await _context.Doctors
+                .Include(d => d.User)     
+                .Include(d => d.Specialty)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(d => d.UserId == userId);
+
+            if (doctor == null) throw new Exception("Perfil no encontrado.");
+
+            return new DoctorProfileDto
+            {
+                UserID = userId, 
+                FirstName = doctor.FirstName,
+                LastName = doctor.LastName,
+                Phone = doctor.Phone,
+                SpecialtyID = doctor.SpecialtyId ?? 0,
+                SpecialtyName = doctor.Specialty?.SpecialtyName ?? "Sin Asignar",
+                Email = doctor.User?.Email ?? "",
+                Username = doctor.User?.Username?? ""
+            };
+        }
+        public async Task UpdateDoctorProfileAsync(DoctorProfileDto dto)
+        {
+            await _userAccountService.UpdateUserProfileAsync(dto);
         }
     }
     

@@ -1,0 +1,210 @@
+@page "/mi-perfil"
+@using HospitalData.DTOs
+@using HospitalData.Services
+@inject IDoctorService DoctorService
+@inject IPatientService PatientService
+@inject UserSessionService SessionService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Mi Perfil</PageTitle>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="bi bi-person-lines-fill"></i> Mi Información Personal</h4>
+                    <span class="badge bg-light text-primary">@SessionService.CurrentUser?.RoleName</span>
+                </div>
+                <div class="card-body">
+                    
+                    @if (_isLoading)
+                    {
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2">Cargando perfil...</p>
+                        </div>
+                    }
+                    else if (_currentRole == "Medico")
+                    {
+                        <EditForm Model="_doctorProfile" OnValidSubmit="HandleDoctorUpdate">
+                            <DataAnnotationsValidator />
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Usuario:</label>
+                                    <InputText @bind-Value="_doctorProfile.Username" class="form-control" />
+                                    <ValidationMessage For="@(() => _doctorProfile.Username)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nueva Contraseña (Opcional):</label>
+                                    <InputText @bind-Value="_doctorProfile.NewPassword" type="password" class="form-control" placeholder="Dejar vacío para no cambiar" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre:</label>
+                                    <InputText @bind-Value="_doctorProfile.FirstName" class="form-control" />
+                                    <ValidationMessage For="@(() => _doctorProfile.FirstName)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellido:</label>
+                                    <InputText @bind-Value="_doctorProfile.LastName" class="form-control" />
+                                    <ValidationMessage For="@(() => _doctorProfile.LastName)" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email:</label>
+                                <InputText @bind-Value="_doctorProfile.Email" class="form-control" />
+                                <ValidationMessage For="@(() => _doctorProfile.Email)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Teléfono:</label>
+                                <InputText @bind-Value="_doctorProfile.Phone" class="form-control" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Especialidad:</label>
+                                <input value="@_doctorProfile.SpecialtyName" class="form-control" disabled />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Guardar Cambios</button>
+                        </EditForm>
+                    }
+                    else if (_currentRole == "Paciente")
+                    {
+                        <EditForm Model="_patientProfile" OnValidSubmit="HandlePatientUpdate">
+                            <DataAnnotationsValidator />
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Usuario:</label>
+                                    <InputText @bind-Value="_patientProfile.Username" class="form-control" />
+                                    <ValidationMessage For="@(() => _patientProfile.Username)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nueva Contraseña (Opcional):</label>
+                                    <InputText @bind-Value="_patientProfile.NewPassword" type="password" class="form-control" placeholder="Dejar vacío para no cambiar" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre:</label>
+                                    <InputText @bind-Value="_patientProfile.FirstName" class="form-control" />
+                                    <ValidationMessage For="@(() => _patientProfile.FirstName)" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellido:</label>
+                                    <InputText @bind-Value="_patientProfile.LastName" class="form-control" />
+                                    <ValidationMessage For="@(() => _patientProfile.LastName)" />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email:</label>
+                                <InputText @bind-Value="_patientProfile.Email" class="form-control" />
+                                <ValidationMessage For="@(() => _patientProfile.Email)" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Teléfono:</label>
+                                <InputText @bind-Value="_patientProfile.Phone" class="form-control" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Dirección:</label>
+                                <InputTextArea @bind-Value="_patientProfile.Address" class="form-control" />
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Guardar Cambios</button>
+                        </EditForm>
+                    }
+
+                    @if (!string.IsNullOrEmpty(_successMessage))
+                    {
+                        <div class="alert alert-success mt-3">@_successMessage</div>
+                    }
+                    @if (!string.IsNullOrEmpty(_errorMessage))
+                    {
+                        <div class="alert alert-danger mt-3">@_errorMessage</div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _currentRole = "";
+    private bool _isLoading = true;
+    private string? _successMessage;
+    private string? _errorMessage;
+
+    // Modelos
+    private DoctorProfileDto _doctorProfile = new();
+    private PatientProfileDto _patientProfile = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.CurrentUser == null)
+        {
+            NavigationManager.NavigateTo("login");
+            return;
+        }
+
+        _currentRole = SessionService.CurrentUser.RoleName;
+        int userId = SessionService.CurrentUser.UserID;
+
+        try
+        {
+            if (_currentRole == "Medico")
+            {
+                _doctorProfile = await DoctorService.GetDoctorProfileAsync(userId);
+            }
+            else if (_currentRole == "Paciente")
+            {
+                _patientProfile = await PatientService.GetPatientProfileAsync(userId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Error al cargar perfil: " + ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task HandleDoctorUpdate()
+    {
+        await PerformUpdate(async () => await DoctorService.UpdateDoctorProfileAsync(_doctorProfile));
+    }
+
+    private async Task HandlePatientUpdate()
+    {
+        await PerformUpdate(async () => await PatientService.UpdatePatientProfileAsync(_patientProfile));
+    }
+
+    private async Task PerformUpdate(Func<Task> updateAction)
+    {
+        _errorMessage = null;
+        _successMessage = null;
+        try
+        {
+            await updateAction();
+            _successMessage = "Perfil actualizado correctamente.";
+            if (_currentRole == "Medico") _doctorProfile.NewPassword = "";
+            if (_currentRole == "Paciente") _patientProfile.NewPassword = "";
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Error al actualizar: " + ex.Message;
+        }
+    }
+}

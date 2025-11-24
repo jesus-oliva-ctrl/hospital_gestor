@@ -20,6 +20,8 @@ namespace HospitalData.Services
         Task ScheduleNewAppointmentAsync(ScheduleAppointmentDto dto);
         Task RescheduleAppointmentAsync(int oldAppointmentId, ScheduleAppointmentDto newAppointmentDto);
         Task <int> GetMyDoctorIdAsync(int loggedInUserId);
+        Task<DoctorProfileDto> GetDoctorProfileAsync(int userId);
+        Task UpdateDoctorProfileAsync(DoctorProfileDto dto);
 
     }
 }

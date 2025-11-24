@@ -48,6 +48,11 @@
             @if (SessionService.CurrentUser.RoleName == "Medico")
             {
                 <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mi-perfil">
+                        <span class="bi bi-person-gear" aria-hidden="true"></span> Mi Perfil
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
                     <NavLink class="nav-link" href="panel-doctor">
                         <span class="bi bi-clipboard2-pulse-fill" aria-hidden="true"></span> Panel Doctor
                     </NavLink>
@@ -60,6 +65,11 @@
             }
             @if (SessionService.CurrentUser.RoleName == "Paciente")
             {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="mi-perfil">
+                        <span class="bi bi-person-gear" aria-hidden="true"></span> Mi Perfil
+                    </NavLink>
+                </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="mis-citas">
                         <span class="bi bi-calendar-check" aria-hidden="true"></span> Mis Citas

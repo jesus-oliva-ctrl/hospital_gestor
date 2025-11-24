@@ -15,5 +15,7 @@ namespace HospitalData.Services
         Task ScheduleAppointmentAsync(ScheduleAppointmentDto dto);
         Task <List<VwPatientActivePrescription>> GetMyPrescriptionsAsync(int patientId);
         Task CancelAppointmentAsync(int appointmentId);
+        Task <PatientProfileDto> GetPatientProfileAsync(int userId);
+        Task UpdatePatientProfileAsync(PatientProfileDto dto);
     }
 }

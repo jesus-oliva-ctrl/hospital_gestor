@@ -12,12 +12,14 @@ namespace HospitalData.Services
         private readonly HospitalDbContext _context;
         private readonly IAppointmentManagementService _appointmentService;
         private readonly IPrescriptionManagementService _prescriptionService;   
+        private readonly IUserAccountService _userAccountService;
 
-        public PatientService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService)
+        public PatientService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService, IUserAccountService userAccountService)
         {
             _context = context;
             _appointmentService = appointmentService;
             _prescriptionService = prescriptionService;
+            _userAccountService = userAccountService;
         }
 
         public async Task<List<MedicalHistoryDto>> GetMyMedicalHistoryAsync(int patientId)
@@ -77,6 +79,33 @@ namespace HospitalData.Services
         public async Task CancelAppointmentAsync(int appointmentId)
         {
             await _appointmentService.CancelAppointmentAsync(appointmentId);
+        }
+
+        public async Task<PatientProfileDto> GetPatientProfileAsync(int userId)
+        {
+            var patient = await _context.Patients
+                .Include(p => p.User) 
+                .AsNoTracking()
+                .FirstOrDefaultAsync(p => p.UserId == userId);
+
+            if (patient == null) throw new Exception("Perfil no encontrado.");
+
+            return new PatientProfileDto
+            {
+                UserID = userId,
+                FirstName = patient.FirstName,
+                LastName = patient.LastName,
+                Phone = patient.Phone,
+                Address = patient.Address, 
+                DateOfBirth = patient.Dob != null ? patient.Dob.Value.ToDateTime(TimeOnly.MinValue) : null,
+                Gender = patient.Gender,
+                Email = patient.User?.Email ?? "",
+                Username = patient.User?.Username ?? ""
+            };
+        }
+        public async Task UpdatePatientProfileAsync(PatientProfileDto dto)
+        {
+            await _userAccountService.UpdateUserProfileAsync(dto, dto.Address);
         }
     }
 }
