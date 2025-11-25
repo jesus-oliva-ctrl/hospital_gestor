@@ -60,7 +60,8 @@
                                 <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
                                 Línea de Tiempo Médica
                             </MudText>
-                            <MudChip Icon="@Icons.Material.Filled.Description" Color="Color.Primary">
+                            @* CORRECCIÓN AQUÍ: Se agregó T="string" *@
+                            <MudChip T="string" Icon="@Icons.Material.Filled.Description" Color="Color.Primary">
                                 @_historial.Count registro@(_historial.Count != 1 ? "s" : "")
                             </MudChip>
                         </MudStack>

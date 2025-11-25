@@ -101,12 +101,14 @@
                                 </MudStack>
                             </MudTd>
                             <MudTd DataLabel="Especialidad">
-                                <MudChip Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.LocalHospital">
+                                @* CORRECCIÓN AQUÍ: T="string" *@
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.LocalHospital">
                                     @context.DoctorSpecialty
                                 </MudChip>
                             </MudTd>
                             <MudTd DataLabel="Estado">
-                                <MudChip Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                @* CORRECCIÓN AQUÍ: T="string" *@
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
                                     @context.Status
                                 </MudChip>
                             </MudTd>

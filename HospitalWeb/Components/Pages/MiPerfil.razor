@@ -23,7 +23,7 @@
         }
         else if (_historial == null || !_historial.Any())
         {
-            <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.InfoOutlined">
+            <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Info">
                 Este paciente no tiene registros médicos previos
             </MudAlert>
         }
@@ -45,9 +45,7 @@
                             <MudPaper Elevation="2" Class="pa-3 mb-2">
                                 <MudStack Spacing="2">
                                     <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                                        <MudChip Size="Size.Small" 
-                                                Color="Color.Info" 
-                                                Icon="@Icons.Material.Filled.MedicalServices">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.MedicalServices">
                                             Consulta Médica
                                         </MudChip>
                                     </MudStack>
