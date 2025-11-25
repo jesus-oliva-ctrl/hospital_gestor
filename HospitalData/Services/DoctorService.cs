@@ -10,11 +10,13 @@ namespace HospitalData.Services
 {
     public class DoctorService : IDoctorService
     {
+        //Dependencias de interfaces
         private readonly HospitalDbContext _context;
         private readonly IAppointmentManagementService _appointmentService;
         private readonly IPrescriptionManagementService _prescriptionService;
         private readonly IUserAccountService _userAccountService;
 
+        //Inyeccion de dependencias a traves del constructor
         public DoctorService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService, IUserAccountService userAccountService)
         {
             _context = context;
@@ -23,6 +25,8 @@ namespace HospitalData.Services
             _userAccountService = userAccountService;
         }
 
+        //Metodos 
+        
         public async Task<List<VwDoctorAgendaSummary>> GetMyAgendaAsync(int loggedInUserId)
         {
 

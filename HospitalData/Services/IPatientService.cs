@@ -9,11 +9,13 @@ namespace HospitalData.Services
     public interface IPatientService
     {
         Task<int> GetPatientIdByUserIdAsync(int userId);
+
         Task<List<MedicalHistoryDto>> GetMyMedicalHistoryAsync(int patientId);
         Task<List<VwPatientAppointment>> GetMyAppointmentsAsync(int patientId);
         Task<List<Doctor>> GetActiveDoctorsAsync();
-        Task ScheduleAppointmentAsync(ScheduleAppointmentDto dto);
         Task <List<VwPatientActivePrescription>> GetMyPrescriptionsAsync(int patientId);
+
+        Task ScheduleAppointmentAsync(ScheduleAppointmentDto dto);
         Task CancelAppointmentAsync(int appointmentId);
         Task <PatientProfileDto> GetPatientProfileAsync(int userId);
         Task UpdatePatientProfileAsync(PatientProfileDto dto);

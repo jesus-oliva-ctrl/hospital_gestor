@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace HospitalData.Services
 {
+    //Clase para la gestion de prescripciones medicas
     public class PrescriptionManagementService : IPrescriptionManagementService
     {
         private readonly HospitalDbContext _context;
@@ -22,7 +23,7 @@ namespace HospitalData.Services
             try
             {
                 await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                    EXEC SP_IssueNewPrescription
+          4          EXEC SP_IssueNewPrescription
                         @PatientID = {dto.PatientID},
                         @DoctorID = {dto.DoctorID},
                         @MedicationID = {dto.MedicationID},
