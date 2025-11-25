@@ -1,12 +1,15 @@
 ﻿@using HospitalData.Services
+@using HospitalWeb.Components.Pages
 @inherits LayoutComponentBase
 @implements IDisposable
 @inject UserSessionService SessionService
 @inject NavigationManager NavigationManager
 
 <MudThemeProvider Theme="_currentTheme" />
+<MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+
 
 <MudLayout>
     <MudAppBar Elevation="1" Color="Color.Primary">

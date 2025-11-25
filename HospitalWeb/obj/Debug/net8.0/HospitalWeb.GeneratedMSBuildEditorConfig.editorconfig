@@ -73,6 +73,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Mb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/MiHistorial.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NaUhpc3RvcmlhbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/MiPerfil.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9NaVBlcmZpbC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 

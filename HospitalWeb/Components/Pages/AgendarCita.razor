@@ -6,77 +6,118 @@
 @inject IPatientService PatientService
 @inject UserSessionService SessionService
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
 <PageTitle>Agendar Cita</PageTitle>
 
 <Autorizacion RolRequerido="Paciente">
     
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0"><i class="bi bi-calendar-plus"></i> Nueva Cita Médica</h4>
-                </div>
-                <div class="card-body">
-                    
-                    <EditForm Model="_newAppointment" OnValidSubmit="HandleScheduleAppointment">
-                        <DataAnnotationsValidator />
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+        <MudPaper Elevation="3" Class="pa-6">
+            <MudStack Spacing="4">
+                
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Success" Size="Size.Large" />
+                    <MudText Typo="Typo.h4" Color="Color.Success">Nueva Cita Médica</MudText>
+                </MudStack>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Médico Especialista:</label>
+                <MudDivider />
+
+                <EditForm Model="_newAppointment" OnValidSubmit="HandleScheduleAppointment">
+                    <DataAnnotationsValidator />
+                    
+                    <MudStack Spacing="4">
+                        
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.subtitle1" Class="fw-bold">
+                                <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Small" Class="mr-1" />
+                                Seleccione su médico especialista
+                            </MudText>
                             
                             @if (_doctorsList == null)
                             {
-                                <div class="text-muted">Cargando médicos...</div>
+                                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">Cargando médicos disponibles...</MudText>
                             }
                             else
                             {
-                                <InputSelect class="form-select" @bind-Value="_newAppointment.DoctorID">
-                                    <option value="0">-- Seleccione un médico --</option>
+                                <MudSelect T="int" 
+                                           @bind-Value="_newAppointment.DoctorID" 
+                                           Label="Médico" 
+                                           Variant="Variant.Outlined"
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           Required="true"
+                                           RequiredError="Debe seleccionar un médico">
+                                    <MudSelectItem T="int" Value="0">-- Seleccione un médico --</MudSelectItem>
                                     @foreach (var doc in _doctorsList)
                                     {
-                                        <option value="@doc.DoctorId">
-                                            Dr. @doc.LastName @doc.FirstName - @(doc.Specialty?.SpecialtyName ?? "General")
-                                        </option>
+                                        <MudSelectItem T="int" Value="@doc.DoctorId">
+                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                                    <MudIcon Icon="@Icons.Material.Filled.Person" />
+                                                </MudAvatar>
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body1">Dr. @doc.LastName @doc.FirstName</MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@(doc.Specialty?.SpecialtyName ?? "General")</MudText>
+                                                </MudStack>
+                                            </MudStack>
+                                        </MudSelectItem>
                                     }
-                                </InputSelect>
+                                </MudSelect>
                             }
-                            <ValidationMessage For="@(() => _newAppointment.DoctorID)" />
-                        </div>
+                        </MudStack>
 
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Fecha y Hora Deseada:</label>
-                            <InputDate @bind-Value="_newAppointment.AppointmentDate" 
-                                       class="form-control" 
-                                       Type="InputDateType.DateTimeLocal" 
-                                       min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
-                            <ValidationMessage For="@(() => _newAppointment.AppointmentDate)" />
-                            <div class="form-text">Los horarios están sujetos a disponibilidad del médico.</div>
-                        </div>
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.subtitle1" Class="fw-bold">
+                                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
+                                Fecha y hora deseada
+                            </MudText>
+                            
+                            <MudDatePicker Label="Fecha" 
+                                          @bind-Date="_selectedDate"
+                                          Variant="Variant.Outlined"
+                                          MinDate="DateTime.Today"
+                                          Required="true"
+                                          Editable="true"
+                                          DateFormat="dd/MM/yyyy"
+                                          FirstDayOfWeek="DayOfWeek.Monday" />
+                            
+                            <MudTimePicker Label="Hora" 
+                                          @bind-Time="_selectedTime"
+                                          Variant="Variant.Outlined"
+                                          Required="true"
+                                          Editable="true"
+                                          AmPm="true" />
+                            
+                            <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Info">
+                                Los horarios están sujetos a disponibilidad del médico
+                            </MudAlert>
+                        </MudStack>
 
-                        @if (!string.IsNullOrEmpty(_errorMessage))
-                        {
-                            <div class="alert alert-danger">
-                                <i class="bi bi-exclamation-triangle-fill"></i> @_errorMessage
-                            </div>
-                        }
-                        @if (!string.IsNullOrEmpty(_successMessage))
-                        {
-                            <div class="alert alert-success">
-                                <i class="bi bi-check-circle-fill"></i> @_successMessage
-                            </div>
-                        }
+                        <MudStack Row="true" Spacing="2" Class="mt-4">
+                            <MudButton Variant="Variant.Filled" 
+                                      Color="Color.Success" 
+                                      Size="Size.Large"
+                                      FullWidth="true"
+                                      StartIcon="@Icons.Material.Filled.CheckCircle"
+                                      ButtonType="ButtonType.Submit">
+                                Confirmar Cita
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" 
+                                      Color="Color.Default" 
+                                      Size="Size.Large"
+                                      Href="mis-citas"
+                                      StartIcon="@Icons.Material.Filled.Cancel">
+                                Cancelar
+                            </MudButton>
+                        </MudStack>
 
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-success btn-lg">Confirmar Cita</button>
-                            <a href="mis-citas" class="btn btn-outline-secondary">Cancelar</a>
-                        </div>
+                    </MudStack>
+                </EditForm>
 
-                    </EditForm>
-                </div>
-            </div>
-        </div>
-    </div>
+            </MudStack>
+        </MudPaper>
+    </MudContainer>
 
 </Autorizacion>
 
@@ -84,8 +125,8 @@
     private ScheduleAppointmentDto _newAppointment = new();
     private List<Doctor>? _doctorsList;
     private int _patientId;
-    private string? _successMessage;
-    private string? _errorMessage;
+    private DateTime? _selectedDate = DateTime.Today.AddDays(1);
+    private TimeSpan? _selectedTime = new TimeSpan(9, 0, 0);
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,39 +139,39 @@
                 _doctorsList = await PatientService.GetActiveDoctorsAsync();
                 
                 _newAppointment.PatientID = _patientId;
-
-                _newAppointment.AppointmentDate = DateTime.Now.AddDays(1).Date.AddHours(9);
             }
             catch (Exception ex)
             {
-                _errorMessage = "Error al cargar datos: " + ex.Message;
+                Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
             }
         }
     }
 
     private async Task HandleScheduleAppointment()
     {
-        _errorMessage = null;
-        _successMessage = null;
-
         if (_newAppointment.DoctorID <= 0)
         {
-            _errorMessage = "Por favor, seleccione un médico de la lista.";
+            Snackbar.Add("Por favor, seleccione un médico de la lista", Severity.Warning);
             return;
+        }
+
+        if (_selectedDate.HasValue && _selectedTime.HasValue)
+        {
+            _newAppointment.AppointmentDate = _selectedDate.Value.Date.Add(_selectedTime.Value);
         }
 
         try
         {
             await PatientService.ScheduleAppointmentAsync(_newAppointment);
             
-            _successMessage = "¡Cita agendada exitosamente! Redirigiendo...";
+            Snackbar.Add("¡Cita agendada exitosamente!", Severity.Success);
             
-            await Task.Delay(2000); 
+            await Task.Delay(1500);
             NavigationManager.NavigateTo("/mis-citas");
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
 }

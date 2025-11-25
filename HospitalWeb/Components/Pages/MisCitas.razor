@@ -4,92 +4,175 @@
 @using HospitalWeb.Components.Shared
 @inject IPatientService PatientService
 @inject UserSessionService SessionService
+@inject ISnackbar Snackbar
 
 <PageTitle>Mis Citas</PageTitle>
 
 <Autorizacion RolRequerido="Paciente">
     
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Mis Próximas Citas</h3>
-        <a href="agendar-cita" class="btn btn-success btn-sm">
-            <i class="bi bi-plus-circle"></i> Nueva Cita
-        </a>
-    </div>
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+        
+        <MudStack Spacing="3">
+            
+            <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Color="Color.Primary" Size="Size.Large" />
+                    <MudText Typo="Typo.h4">Mis Citas Médicas</MudText>
+                </MudStack>
+                <MudButton Variant="Variant.Filled" 
+                          Color="Color.Success" 
+                          StartIcon="@Icons.Material.Filled.Add"
+                          Href="agendar-cita"
+                          Size="Size.Large">
+                    Nueva Cita
+                </MudButton>
+            </MudStack>
 
-    <p>Consulta el historial y estado de tus citas médicas.</p>
-    <hr />
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Consulta el historial y estado de tus citas médicas programadas
+            </MudText>
 
-    @if (_isLoading)
-    {
-        <div class="d-flex justify-content-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando citas...</span>
-            </div>
-        </div>
-    }
-    else if (_myAppointments == null || !_myAppointments.Any())
-    {
-        <div class="alert alert-info d-flex align-items-center">
-            <i class="bi bi-info-circle-fill me-2"></i>
-            <div>
-                No tienes citas programadas actualmente. 
-                <a href="agendar-cita" class="alert-link">¡Agenda una ahora!</a>
-            </div>
-        </div>
-    }
-    else
-    {
-        <div class="table-responsive shadow-sm rounded">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th>Fecha y Hora</th>
-                        <th>Doctor</th>
-                        <th>Especialidad</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var cita in _myAppointments)
-                    {
-                        <tr>
-                            <td>
-                                <i class="bi bi-calendar-event text-muted me-1"></i>
-                                @cita.AppointmentDate.ToString("f")
-                            </td>
-                            <td>
-                                <strong>Dr. @cita.DoctorFirstName @cita.DoctorLastName</strong>
-                            </td>
-                            <td>
-                                <span class="text-muted">@cita.DoctorSpecialty</span>
-                            </td>
-                            <td>
-                                <span class="badge rounded-pill @GetBadgeClass(cita.Status)">
-                                    @cita.Status
-                                </span>
-                            </td>
-                            <td>
-                                @if (cita.Status == "Programada")
+            <MudDivider />
+
+            @if (_isLoading)
+            {
+                <MudPaper Elevation="0" Class="d-flex justify-center align-center pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando tus citas...</MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else if (_myAppointments == null || !_myAppointments.Any())
+            {
+                <MudPaper Elevation="2" Class="pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.EventBusy" Size="Size.Large" Color="Color.Info" Style="font-size: 80px;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">No tienes citas programadas</MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                            ¡Es un buen momento para agendar una consulta con uno de nuestros especialistas!
+                        </MudText>
+                        <MudButton Variant="Variant.Filled" 
+                                  Color="Color.Success" 
+                                  StartIcon="@Icons.Material.Filled.Add"
+                                  Href="agendar-cita"
+                                  Size="Size.Large">
+                            Agendar Primera Cita
+                        </MudButton>
+                    </MudStack>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Elevation="2">
+                    <MudTable Items="@_myAppointments" 
+                              Hover="true" 
+                              Breakpoint="Breakpoint.Sm"
+                              Dense="false"
+                              Elevation="0">
+                        <HeaderContent>
+                            <MudTh><MudTableSortLabel SortBy="new Func<VwPatientAppointment, object>(x => x.AppointmentDate)">
+                                Fecha y Hora
+                            </MudTableSortLabel></MudTh>
+                            <MudTh>Doctor</MudTh>
+                            <MudTh>Especialidad</MudTh>
+                            <MudTh>Estado</MudTh>
+                            <MudTh Style="text-align: right">Acciones</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Fecha y Hora">
+                                <MudStack Spacing="1">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Primary" />
+                                        <MudText Typo="Typo.body2">@context.AppointmentDate.ToString("dd/MM/yyyy")</MudText>
+                                    </MudStack>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                                        <MudText Typo="Typo.body2">@context.AppointmentDate.ToString("hh:mm tt")</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Doctor">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        <MudIcon Icon="@Icons.Material.Filled.MedicalServices" />
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.body1">Dr. @context.DoctorFirstName @context.DoctorLastName</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Especialidad">
+                                <MudChip Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.LocalHospital">
+                                    @context.DoctorSpecialty
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Estado">
+                                <MudChip Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                    @context.Status
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Acciones" Style="text-align: right">
+                                @if (context.Status == "Programada")
                                 {
-                                    <button class="btn btn-outline-danger btn-sm"
-                                            @onclick="() => HandleCancelAppointment(cita.AppointmentId)">
-                                        <i class="bi bi-x-circle"></i> Cancelar
-                                    </button>
+                                    <MudButton Variant="Variant.Outlined" 
+                                              Color="Color.Error" 
+                                              Size="Size.Small"
+                                              StartIcon="@Icons.Material.Filled.Cancel"
+                                              OnClick="@(() => OpenCancelDialog(context.AppointmentId))">
+                                        Cancelar
+                                    </MudButton>
                                 }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-    }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                }
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{5, 10, 25}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudPaper>
+            }
+
+        </MudStack>
+
+    </MudContainer>
 
 </Autorizacion>
+
+<MudDialog @bind-IsVisible="_showCancelDialog" Options="_dialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mr-2" />
+            Confirmar Cancelación
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudText>¿Está seguro que desea cancelar esta cita médica?</MudText>
+        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+            Esta acción no se puede deshacer.
+        </MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="@(() => _showCancelDialog = false)">Volver</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="ConfirmCancelAppointment">
+            Cancelar Cita
+        </MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
     private List<VwPatientAppointment>? _myAppointments;
     private bool _isLoading = true;
+    private bool _showCancelDialog = false;
+    private int _appointmentToCancel = 0;
+
+    private DialogOptions _dialogOptions = new DialogOptions 
+    { 
+        MaxWidth = MaxWidth.Small, 
+        FullWidth = true,
+        CloseOnEscapeKey = true 
+    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -97,52 +180,59 @@
 
         if (usuarioActual != null && usuarioActual.RoleName == "Paciente")
         {
-            try
-            {
-                _isLoading = true;
-                
-                int patientId = await PatientService.GetPatientIdByUserIdAsync(usuarioActual.UserID);
-                
-                _myAppointments = await PatientService.GetMyAppointmentsAsync(patientId);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error cargando citas: {ex.Message}");
-            }
-            finally
-            {
-                _isLoading = false;
-            }
+            await LoadAppointments();
         }
     }
-    private string GetBadgeClass(string status) => status switch
+
+    private async Task LoadAppointments()
     {
-        "Programada" => "bg-primary",
-        "Completada" => "bg-success",
-        "Cancelada" => "bg-danger",
-        _ => "bg-secondary"
-    };
-
-    private async Task HandleCancelAppointment(int appointmentId)
-    {        
-        var currentUser = SessionService.CurrentUser;
-        if (currentUser == null) return;
-
         try
         {
-            _isLoading = true; 
-            await PatientService.CancelAppointmentAsync(appointmentId);
+            _isLoading = true;
             
-            int patientId = await PatientService.GetPatientIdByUserIdAsync(currentUser.UserID);
+            int patientId = await PatientService.GetPatientIdByUserIdAsync(SessionService.CurrentUser.UserID);
+            
             _myAppointments = await PatientService.GetMyAppointmentsAsync(patientId);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error al cancelar: {ex.Message}");
+            Snackbar.Add($"Error al cargar citas: {ex.Message}", Severity.Error);
         }
         finally
         {
             _isLoading = false;
+        }
+    }
+
+    private Color GetStatusColor(string status) => status switch
+    {
+        "Programada" => Color.Primary,
+        "Completada" => Color.Success,
+        "Cancelada" => Color.Error,
+        _ => Color.Default
+    };
+
+    private void OpenCancelDialog(int appointmentId)
+    {
+        _appointmentToCancel = appointmentId;
+        _showCancelDialog = true;
+    }
+
+    private async Task ConfirmCancelAppointment()
+    {
+        _showCancelDialog = false;
+        
+        try
+        {
+            await PatientService.CancelAppointmentAsync(_appointmentToCancel);
+            
+            Snackbar.Add("Cita cancelada exitosamente", Severity.Success);
+            
+            await LoadAppointments();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cancelar: {ex.Message}", Severity.Error);
         }
     }
 }

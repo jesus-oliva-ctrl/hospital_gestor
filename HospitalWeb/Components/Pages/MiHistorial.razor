@@ -1,0 +1,179 @@
+@page "/mi-historial"
+@using HospitalData.DTOs
+@using HospitalData.Services
+@inject IPatientService PatientService
+@inject UserSessionService SessionService
+@inject ISnackbar Snackbar
+
+<PageTitle>Mi Historial Clínico</PageTitle>
+
+<Autorizacion RolRequerido="Paciente">
+    
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+        
+        <MudStack Spacing="3">
+            
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h4">Mi Expediente Clínico</MudText>
+            </MudStack>
+
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Historial completo de tus consultas y tratamientos médicos
+            </MudText>
+
+            <MudDivider />
+
+            @if (_isLoading)
+            {
+                <MudPaper Elevation="0" Class="d-flex justify-center align-center pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando tu historial médico...</MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else if (_historial == null || !_historial.Any())
+            {
+                <MudPaper Elevation="2" Class="pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.FolderOpen" 
+                                Size="Size.Large" 
+                                Color="Color.Info" 
+                                Style="font-size: 80px;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">
+                            No hay registros médicos
+                        </MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                            Tu historial médico aparecerá aquí después de tu primera consulta
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Elevation="2" Class="pa-4">
+                    
+                    <MudStack Spacing="2" Class="mb-4">
+                        <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.h6">
+                                <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                                Línea de Tiempo Médica
+                            </MudText>
+                            <MudChip Icon="@Icons.Material.Filled.Description" Color="Color.Primary">
+                                @_historial.Count registro@(_historial.Count != 1 ? "s" : "")
+                            </MudChip>
+                        </MudStack>
+                    </MudStack>
+
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" 
+                                TimelinePosition="TimelinePosition.Alternate"
+                                TimelineAlign="TimelineAlign.Start">
+                        @foreach (var registro in _historial)
+                        {
+                            <MudTimelineItem Color="Color.Primary" Size="Size.Large" Elevation="3">
+                                <ItemOpposite>
+                                    <MudStack Spacing="1" AlignItems="@(GetAlignmentForIndex(_historial.IndexOf(registro)))">
+                                        <MudText Typo="Typo.h6" Color="Color.Primary">
+                                            @registro.VisitDate.ToString("dd")
+                                        </MudText>
+                                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                            @registro.VisitDate.ToString("MMM yyyy")
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @registro.VisitDate.ToString("HH:mm")
+                                        </MudText>
+                                    </MudStack>
+                                </ItemOpposite>
+                                <ItemContent>
+                                    <MudCard Elevation="4">
+                                        <MudCardHeader>
+                                            <CardHeaderContent>
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                    <MudAvatar Color="Color.Secondary" Size="Size.Medium">
+                                                        <MudIcon Icon="@Icons.Material.Filled.HealthAndSafety" />
+                                                    </MudAvatar>
+                                                    <MudStack Spacing="0">
+                                                        <MudText Typo="Typo.h6">Consulta Médica</MudText>
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                            ID: #@registro.HistoryID
+                                                        </MudText>
+                                                    </MudStack>
+                                                </MudStack>
+                                            </CardHeaderContent>
+                                        </MudCardHeader>
+                                        <MudCardContent>
+                                            <MudStack Spacing="3">
+                                                
+                                                <MudPaper Elevation="0" Class="pa-3" Style="background-color: var(--mud-palette-background-grey);">
+                                                    <MudText Typo="Typo.body2">
+                                                        @registro.Description
+                                                    </MudText>
+                                                </MudPaper>
+
+                                                <MudDivider />
+
+                                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                                    <MudAvatar Color="Color.Info" Size="Size.Small">
+                                                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                                    </MudAvatar>
+                                                    <MudStack Spacing="0">
+                                                        <MudText Typo="Typo.caption" Color="Color.Secondary">Atendido por</MudText>
+                                                        <MudText Typo="Typo.body2">Médico Tratante</MudText>
+                                                    </MudStack>
+                                                </MudStack>
+
+                                            </MudStack>
+                                        </MudCardContent>
+                                    </MudCard>
+                                </ItemContent>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+
+                </MudPaper>
+
+                <MudPaper Elevation="0" Class="pa-4 mt-4">
+                    <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Lock">
+                        Tu información médica está protegida y solo es visible para ti y tu equipo médico
+                    </MudAlert>
+                </MudPaper>
+            }
+
+        </MudStack>
+
+    </MudContainer>
+
+</Autorizacion>
+
+@code {
+    private List<MedicalHistoryDto>? _historial;
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (SessionService.CurrentUser?.RoleName == "Paciente")
+        {
+            try
+            {
+                _isLoading = true;
+                int patientId = await PatientService.GetPatientIdByUserIdAsync(SessionService.CurrentUser.UserID);
+                
+                _historial = await PatientService.GetMyMedicalHistoryAsync(patientId);
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error al cargar historial: {ex.Message}", Severity.Error);
+            }
+            finally
+            {
+                _isLoading = false;
+            }
+        }
+    }
+
+    private AlignItems GetAlignmentForIndex(int index)
+    {
+        return index % 2 == 0 ? AlignItems.End : AlignItems.Start;
+    }
+}

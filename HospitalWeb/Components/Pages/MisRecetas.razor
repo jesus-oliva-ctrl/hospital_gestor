@@ -3,71 +3,150 @@
 @using HospitalData.Services
 @inject IPatientService PatientService
 @inject UserSessionService SessionService
+@inject ISnackbar Snackbar
 
 <PageTitle>Mis Recetas</PageTitle>
 
 <Autorizacion RolRequerido="Paciente">
     
-    <h3><i class="bi bi-capsule-pill text-primary"></i> Mis Prescripciones Activas</h3>
-    <p>Listado de medicamentos recetados y vigentes.</p>
-    <hr />
+    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+        
+        <MudStack Spacing="3">
+            
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Medication" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h4">Mis Prescripciones Activas</MudText>
+            </MudStack>
 
-    @if (_isLoading)
-    {
-        <div class="d-flex justify-content-center my-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando recetas...</span>
-            </div>
-        </div>
-    }
-    else if (_myPrescriptions == null || !_myPrescriptions.Any())
-    {
-        <div class="alert alert-success d-flex align-items-center shadow-sm">
-            <i class="bi bi-check-circle-fill me-3 fs-4"></i>
-            <div>No tienes prescripciones activas en este momento.</div>
-        </div>
-    }
-    else
-    {
-        <div class="row">
-            @foreach (var receta in _myPrescriptions)
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Listado de medicamentos recetados y vigentes
+            </MudText>
+
+            <MudDivider />
+
+            @if (_isLoading)
             {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-header bg-primary bg-gradient text-white">
-                            <h5 class="card-title mb-0">
-                                @receta.MedicationName
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">
-                                <strong>Dosis:</strong> @receta.Dosage
-                            </p>
-                            <p class="card-text">
-                                <strong>Cantidad:</strong> @receta.QuantityToDispense unidades
-                            </p>
-                            <p class="card-text text-muted small">
-                                <i class="bi bi-person-fill"></i> Recetado por: Dr. @receta.DoctorFirstName @receta.DoctorLastName
-                            </p>
-                        </div>
-                        <div class="card-footer bg-light border-top-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <small class="text-muted">
-                                    Válido hasta: <strong>@receta.EndDate?.ToString("d")</strong>
-                                </small>
-                                
-                                @if (receta.EndDate.HasValue && 
-                                     (receta.EndDate.Value.ToDateTime(TimeOnly.MinValue) - DateTime.Now).TotalDays < 3)
-                                {
-                                    <span class="badge bg-warning text-dark">Vence pronto</span>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <MudPaper Elevation="0" Class="d-flex justify-center align-center pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando tus recetas...</MudText>
+                    </MudStack>
+                </MudPaper>
             }
-        </div>
-    }
+            else if (_myPrescriptions == null || !_myPrescriptions.Any())
+            {
+                <MudPaper Elevation="2" Class="pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" 
+                                Size="Size.Large" 
+                                Color="Color.Success" 
+                                Style="font-size: 80px;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">
+                            No tienes prescripciones activas
+                        </MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                            Actualmente no hay medicamentos recetados en tu perfil
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else
+            {
+                <MudGrid>
+                    @foreach (var receta in _myPrescriptions)
+                    {
+                        var daysUntilExpiry = receta.EndDate.HasValue 
+                            ? (receta.EndDate.Value.ToDateTime(TimeOnly.MinValue) - DateTime.Now).TotalDays 
+                            : 0;
+                        var isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry < 3;
+
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudCard Elevation="3" Class="@(isExpiringSoon ? "mud-theme-warning" : "")">
+                                
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                            <MudAvatar Color="Color.Primary" Size="Size.Medium">
+                                                <MudIcon Icon="@Icons.Material.Filled.Medication" />
+                                            </MudAvatar>
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.h6">@receta.MedicationName</MudText>
+                                                @if (isExpiringSoon)
+                                                {
+                                                    <MudChip Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Warning">
+                                                        Vence pronto
+                                                    </MudChip>
+                                                }
+                                            </MudStack>
+                                        </MudStack>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+
+                                <MudCardContent>
+                                    <MudStack Spacing="2">
+                                        
+                                        <MudStack Row="true" Spacing="2">
+                                            <MudIcon Icon="@Icons.Material.Filled.LocalPharmacy" Size="Size.Small" Color="Color.Primary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Dosis</MudText>
+                                                <MudText Typo="Typo.body1"><strong>@receta.Dosage</strong></MudText>
+                                            </MudStack>
+                                        </MudStack>
+
+                                        <MudStack Row="true" Spacing="2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Inventory" Size="Size.Small" Color="Color.Info" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2" Color="Color.Secondary">Cantidad</MudText>
+                                                <MudText Typo="Typo.body1"><strong>@receta.QuantityToDispense unidades</strong></MudText>
+                                            </MudStack>
+                                        </MudStack>
+
+                                        <MudDivider />
+
+                                        <MudStack Row="true" Spacing="2">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Secondary" />
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">Recetado por</MudText>
+                                                <MudText Typo="Typo.body2">Dr. @receta.DoctorFirstName @receta.DoctorLastName</MudText>
+                                            </MudStack>
+                                        </MudStack>
+
+                                    </MudStack>
+                                </MudCardContent>
+
+                                <MudCardActions>
+                                    <MudStack Row="true" JustifyContent="Justify.SpaceBetween" Class="flex-grow-1">
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">Válido hasta</MudText>
+                                            <MudText Typo="Typo.body2">
+                                                <strong>@receta.EndDate?.ToString("dd/MM/yyyy")</strong>
+                                            </MudText>
+                                        </MudStack>
+                                        
+                                        @if (isExpiringSoon && daysUntilExpiry > 0)
+                                        {
+                                            <MudChip Size="Size.Small" Color="Color.Warning">
+                                                @((int)daysUntilExpiry) día@(daysUntilExpiry > 1 ? "s" : "") restante@(daysUntilExpiry > 1 ? "s" : "")
+                                            </MudChip>
+                                        }
+                                    </MudStack>
+                                </MudCardActions>
+                            </MudCard>
+                        </MudItem>
+                    }
+                </MudGrid>
+
+                <MudPaper Elevation="0" Class="pa-4 mt-4">
+                    <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Info">
+                        Recuerda seguir las indicaciones de tu médico. Si tienes dudas sobre tu medicación, consulta con tu doctor.
+                    </MudAlert>
+                </MudPaper>
+            }
+
+        </MudStack>
+
+    </MudContainer>
+
 </Autorizacion>
 
 @code {
@@ -87,7 +166,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Snackbar.Add($"Error al cargar recetas: {ex.Message}", Severity.Error);
             }
             finally
             {
