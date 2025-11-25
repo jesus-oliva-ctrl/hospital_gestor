@@ -2,95 +2,251 @@
 @using HospitalData.Services
 @using HospitalData.DTOs
 @inject IStaffService StaffService
+@inject ISnackbar Snackbar
 
 <PageTitle>Gestión de Inventario</PageTitle>
 
 <Autorizacion RolRequerido="Administrativo">
 
-    <h1>Gestión de Inventario de Medicamentos</h1>
-    <hr />
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+        
+        <MudStack Spacing="3">
+            
+            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                <MudIcon Icon="@Icons.Material.Filled.Inventory" Color="Color.Success" Size="Size.Large" />
+                <MudStack Spacing="0">
+                    <MudText Typo="Typo.h4">Gestión de Inventario</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Administración de medicamentos y stock
+                    </MudText>
+                </MudStack>
+            </MudStack>
 
-    <div class="row">
-        <div class="col-md-4">
-            <h4>Añadir Nuevo Medicamento</h4>
-            <EditForm Model="_nuevoMedicamento" OnValidSubmit="HandleCrearMedicamento">
-                <DataAnnotationsValidator />
-                <div class="mb-3">
-                    <label>Nombre:</label>
-                    <InputText class="form-control" @bind-Value="_nuevoMedicamento.Name" />
-                    <ValidationMessage For="@(() => _nuevoMedicamento.Name)" />
-                </div>
-                <div class="mb-3">
-                    <label>Descripción:</label>
-                    <InputTextArea class="form-control" @bind-Value="_nuevoMedicamento.Description" />
-                </div>
-                <div class="mb-3">
-                    <label>Cantidad Inicial:</label>
-                    <InputNumber class="form-control" @bind-Value="_nuevoMedicamento.InitialQuantity" />
-                </div>
-                <button type="submit" class="btn btn-primary">Añadir al Inventario</button>
-            </EditForm>
+            <MudDivider />
 
-            <hr />
+            <MudGrid>
+                
+                <MudItem xs="12" md="4">
+                    <MudStack Spacing="3">
+                        
+                        <MudCard Elevation="3">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Medium" />
+                                        <MudText Typo="Typo.h6">Nuevo Medicamento</MudText>
+                                    </MudStack>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <EditForm Model="_nuevoMedicamento" OnValidSubmit="HandleCrearMedicamento">
+                                    <DataAnnotationsValidator />
+                                    
+                                    <MudStack Spacing="3">
+                                        <MudTextField @bind-Value="_nuevoMedicamento.Name"
+                                                      Label="Nombre del Medicamento"
+                                                      Variant="Variant.Outlined"
+                                                      Required="true"
+                                                      For="@(() => _nuevoMedicamento.Name)"
+                                                      Adornment="Adornment.Start"
+                                                      AdornmentIcon="@Icons.Material.Filled.Medication" />
 
-            <h4>Añadir Stock</h4>
-            <EditForm Model="_stockUpdate" OnValidSubmit="HandleActualizarStock">
-                <DataAnnotationsValidator />
-                <div class="mb-3">
-                    <label>Medicamento:</label>
-                    <InputSelect class="form-select" @bind-Value="_stockUpdate.MedicationId">
-                        <option value="0">-- Seleccione un medicamento --</option>
-                        @if (_inventario != null)
-                        {
-                            @foreach (var item in _inventario)
+                                        <MudTextField @bind-Value="_nuevoMedicamento.Description"
+                                                      Label="Descripción"
+                                                      Variant="Variant.Outlined"
+                                                      Lines="3"
+                                                      Adornment="Adornment.Start"
+                                                      AdornmentIcon="@Icons.Material.Filled.Description" />
+
+                                        <MudNumericField @bind-Value="_nuevoMedicamento.InitialQuantity"
+                                                         Label="Cantidad Inicial"
+                                                         Variant="Variant.Outlined"
+                                                         Min="0"
+                                                         For="@(() => _nuevoMedicamento.InitialQuantity)"
+                                                         Adornment="Adornment.Start"
+                                                         AdornmentIcon="@Icons.Material.Filled.Numbers" />
+
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Success"
+                                                   FullWidth="true"
+                                                   StartIcon="@Icons.Material.Filled.Add"
+                                                   ButtonType="ButtonType.Submit">
+                                            Añadir al Inventario
+                                        </MudButton>
+                                    </MudStack>
+                                </EditForm>
+                            </MudCardContent>
+                        </MudCard>
+
+                        <MudCard Elevation="3">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.AddBox" Color="Color.Info" Size="Size.Medium" />
+                                        <MudText Typo="Typo.h6">Añadir Stock</MudText>
+                                    </MudStack>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <EditForm Model="_stockUpdate" OnValidSubmit="HandleActualizarStock">
+                                    <DataAnnotationsValidator />
+                                    
+                                    <MudStack Spacing="3">
+                                        <MudSelect T="int"
+                                                   @bind-Value="_stockUpdate.MedicationId"
+                                                   Label="Medicamento"
+                                                   Variant="Variant.Outlined"
+                                                   Required="true"
+                                                   AnchorOrigin="Origin.BottomCenter">
+                                            <MudSelectItem T="int" Value="0">-- Seleccione medicamento --</MudSelectItem>
+                                            @if (_inventario != null)
+                                            {
+                                                @foreach (var item in _inventario)
+                                                {
+                                                    <MudSelectItem T="int" Value="@item.MedicationId">
+                                                        @item.Name (Stock actual: @item.Quantity)
+                                                    </MudSelectItem>
+                                                }
+                                            }
+                                        </MudSelect>
+
+                                        <MudNumericField @bind-Value="_stockUpdate.QuantityToAdd"
+                                                         Label="Cantidad a Añadir"
+                                                         Variant="Variant.Outlined"
+                                                         Min="1"
+                                                         Required="true"
+                                                         For="@(() => _stockUpdate.QuantityToAdd)"
+                                                         Adornment="Adornment.Start"
+                                                         AdornmentIcon="@Icons.Material.Filled.Add" />
+
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="Color.Info"
+                                                   FullWidth="true"
+                                                   StartIcon="@Icons.Material.Filled.Update"
+                                                   ButtonType="ButtonType.Submit">
+                                            Actualizar Stock
+                                        </MudButton>
+                                    </MudStack>
+                                </EditForm>
+                            </MudCardContent>
+                        </MudCard>
+
+                    </MudStack>
+                </MudItem>
+
+                <MudItem xs="12" md="8">
+                    <MudCard Elevation="3">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.ViewList" Color="Color.Success" Size="Size.Medium" />
+                                        <MudText Typo="Typo.h6">Inventario Actual</MudText>
+                                    </MudStack>
+                                    @if (_inventario != null)
+                                    {
+                                        <MudChip T="string" Icon="@Icons.Material.Filled.Inventory" Color="Color.Success">
+                                            @_inventario.Count medicamento@(_inventario.Count != 1 ? "s" : "")
+                                        </MudChip>
+                                    }
+                                </MudStack>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            @if (_isLoading)
                             {
-                                <option value="@item.MedicationId">@item.Name</option>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-4">
+                                    <MudProgressCircular Color="Color.Success" Size="Size.Large" Indeterminate="true" />
+                                    <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando inventario...</MudText>
+                                </MudStack>
                             }
-                        }
-                    </InputSelect>
-                    <ValidationMessage For="@(() => _stockUpdate.MedicationId)" />
-                </div>
-                <div class="mb-3">
-                    <label>Cantidad a Añadir:</label>
-                    <InputNumber class="form-control" @bind-Value="_stockUpdate.QuantityToAdd" />
-                    <ValidationMessage For="@(() => _stockUpdate.QuantityToAdd)" />
-                </div>
-                <button type="submit" class="btn btn-secondary">Actualizar Stock</button>
-            </EditForm>
-        </div>
-        <div class="col-md-8">
-            <h4>Inventario Actual</h4>
-            @if (_inventario == null)
-            {
-                <p><em>Cargando inventario...</em></p>
-            }
-            else
-            {
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Stock</th>
-                            <th>Última Actualización</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in _inventario)
-                        {
-                            <tr>
-                                <td><strong>@item.Name</strong><br/><small>@item.Description</small></td>
-                                <td>@item.Quantity</td>
-                                <td>@item.LastUpdated.ToString("g")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </div>
-    </div>
+                            else if (_inventario == null || !_inventario.Any())
+                            {
+                                <MudAlert Severity="Severity.Info">
+                                    El inventario está vacío. Añade medicamentos usando el formulario.
+                                </MudAlert>
+                            }
+                            else
+                            {
+                                <MudTable Items="@_inventario"
+                                          Dense="false"
+                                          Hover="true"
+                                          Striped="true"
+                                          Elevation="0"
+                                          Filter="new Func<InventoryDto,bool>(FilterInventory)">
+                                    <ToolBarContent>
+                                        <MudTextField @bind-Value="_searchInventory"
+                                                      Placeholder="Buscar medicamento..."
+                                                      Adornment="Adornment.Start"
+                                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                                      IconSize="Size.Medium"
+                                                      Variant="Variant.Outlined"
+                                                      Margin="Margin.Dense"
+                                                      Clearable="true" />
+                                    </ToolBarContent>
+                                    <HeaderContent>
+                                        <MudTh><MudTableSortLabel SortBy="new Func<InventoryDto, object>(x => x.Name)">Medicamento</MudTableSortLabel></MudTh>
+                                        <MudTh><MudTableSortLabel SortBy="new Func<InventoryDto, object>(x => x.Quantity)">Stock</MudTableSortLabel></MudTh>
+                                        <MudTh><MudTableSortLabel SortBy="new Func<InventoryDto, object>(x => x.LastUpdated)">Última Actualización</MudTableSortLabel></MudTh>
+                                    </HeaderContent>
+                                    <RowTemplate>
+                                        <MudTd DataLabel="Medicamento">
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body1"><strong>@context.Name</strong></MudText>
+                                                @if (!string.IsNullOrEmpty(context.Description))
+                                                {
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Description</MudText>
+                                                }
+                                            </MudStack>
+                                        </MudTd>
+                                        <MudTd DataLabel="Stock">
+                                            @if (context.Quantity <= 10)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Error" Icon="@Icons.Material.Filled.Warning">
+                                                    @context.Quantity unidades
+                                                </MudChip>
+                                            }
+                                            else if (context.Quantity <= 50)
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                                    @context.Quantity unidades
+                                                </MudChip>
+                                            }
+                                            else
+                                            {
+                                                <MudChip T="string" Size="Size.Small" Color="Color.Success">
+                                                    @context.Quantity unidades
+                                                </MudChip>
+                                            }
+                                        </MudTd>
+                                        <MudTd DataLabel="Última Actualización">
+                                            <MudStack Spacing="0">
+                                                <MudText Typo="Typo.body2">@context.LastUpdated.ToString("dd/MM/yyyy")</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@context.LastUpdated.ToString("HH:mm")</MudText>
+                                            </MudStack>
+                                        </MudTd>
+                                    </RowTemplate>
+                                    <PagerContent>
+                                        <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+                                    </PagerContent>
+                                </MudTable>
 
-    @if (!string.IsNullOrEmpty(_successMessage)) { <div class="alert alert-success mt-3">@_successMessage</div> }
-    @if (!string.IsNullOrEmpty(_errorMessage)) { <div class="alert alert-danger mt-3">@_errorMessage</div> }
+                                <MudAlert Severity="Severity.Warning" Class="mt-4" Dense="true" Icon="@Icons.Material.Filled.Info">
+                                    <strong>Código de colores:</strong> 
+                                    Rojo (≤10) = Stock crítico | 
+                                    Amarillo (11-50) = Stock bajo | 
+                                    Verde (>50) = Stock normal
+                                </MudAlert>
+                            }
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+
+            </MudGrid>
+
+        </MudStack>
+
+    </MudContainer>
 
 </Autorizacion>
 
@@ -98,8 +254,8 @@
     private List<InventoryDto>? _inventario;
     private CreateMedicationDto _nuevoMedicamento = new();
     private UpdateStockDto _stockUpdate = new();
-    private string? _errorMessage;
-    private string? _successMessage;
+    private string _searchInventory = "";
+    private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -108,35 +264,32 @@
 
     private async Task HandleCrearMedicamento()
     {
-        await HandleAction(async () => {
-            await StaffService.CrearMedicamentoAsync(_nuevoMedicamento);
-            _nuevoMedicamento = new();
-            return "Medicamento añadido exitosamente.";
-        });
-    }
-
-    private async Task HandleActualizarStock()
-    {
-        await HandleAction(async () => {
-            await StaffService.ActualizarStockAsync(_stockUpdate);
-            var medName = _inventario?.FirstOrDefault(m => m.MedicationId == _stockUpdate.MedicationId)?.Name;
-            _stockUpdate = new();
-            return $"Stock de '{medName}' actualizado exitosamente.";
-        });
-    }
-
-    private async Task HandleAction(Func<Task<string>> action)
-    {
-        _errorMessage = null;
-        _successMessage = null;
         try
         {
-            _successMessage = await action();
+            await StaffService.CrearMedicamentoAsync(_nuevoMedicamento);
+            Snackbar.Add("Medicamento añadido exitosamente", Severity.Success);
+            _nuevoMedicamento = new();
             await CargarInventario();
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Error: {ex.Message}";
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task HandleActualizarStock()
+    {
+        try
+        {
+            await StaffService.ActualizarStockAsync(_stockUpdate);
+            var medName = _inventario?.FirstOrDefault(m => m.MedicationId == _stockUpdate.MedicationId)?.Name;
+            Snackbar.Add($"Stock de '{medName}' actualizado exitosamente", Severity.Success);
+            _stockUpdate = new();
+            await CargarInventario();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
 
@@ -144,11 +297,27 @@
     {
         try
         {
+            _isLoading = true;
             _inventario = await StaffService.ObtenerInventarioAsync();
         }
         catch (Exception ex)
         {
-            _errorMessage = $"No se pudo cargar el inventario: {ex.Message}";
+            Snackbar.Add($"No se pudo cargar el inventario: {ex.Message}", Severity.Error);
         }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private bool FilterInventory(InventoryDto item)
+    {
+        if (string.IsNullOrWhiteSpace(_searchInventory))
+            return true;
+        if (item.Name.Contains(_searchInventory, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (item.Description?.Contains(_searchInventory, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        return false;
     }
 }

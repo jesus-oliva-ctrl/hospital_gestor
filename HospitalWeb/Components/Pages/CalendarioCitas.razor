@@ -2,79 +2,283 @@
 @using HospitalData.DTOs
 @using HospitalData.Services
 @inject IStaffService StaffService
+@inject ISnackbar Snackbar
 
 <PageTitle>Calendario de Citas</PageTitle>
 
 <Autorizacion RolRequerido="Administrativo">
 
-    <h1>Calendario General de Citas</h1>
-    <p>Esta es una vista de todas las citas programadas en el sistema.</p>
-    <hr />
-
-    @if (_citas == null)
-    {
-        <p><em>Cargando citas...</em></p>
-    }
-    else if (!_citas.Any())
-    {
-        <p>No hay citas programadas.</p>
-    }
-    else
-    {
-        <table class="table table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Fecha y Hora</th>
-                    <th>Paciente</th>
-                    <th>Doctor</th>
-                    <th>Especialidad</th>
-                    <th>Estado</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var cita in _citas)
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+        
+        <MudStack Spacing="3">
+            
+            <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Info" Size="Size.Large" />
+                    <MudStack Spacing="0">
+                        <MudText Typo="Typo.h4">Calendario General de Citas</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Vista completa de todas las citas programadas en el sistema
+                        </MudText>
+                    </MudStack>
+                </MudStack>
+                @if (_citas != null && _citas.Any())
                 {
-                    <tr>
-                        <td>@cita.AppointmentDate.ToString("dd/MM/yyyy hh:mm tt")</td>
-                        <td>@cita.PatientFirstName @cita.PatientLastName</td>
-                        <td>@cita.DoctorFirstName @cita.DoctorLastName</td>
-                        <td>@cita.DoctorSpecialty</td>
-                        <td>
-                            <span class="badge @GetStatusBadgeClass(cita.Status)">
-                                @cita.Status
-                            </span>
-                        </td>
-                    </tr>
+                    <MudChip T="string" Icon="@Icons.Material.Filled.Event" Color="Color.Info" Size="Size.Large">
+                        @_citas.Count cita@(_citas.Count != 1 ? "s" : "")
+                    </MudChip>
                 }
-            </tbody>
-        </table>
-    }
+            </MudStack>
+
+            <MudDivider />
+
+            @if (_isLoading)
+            {
+                <MudPaper Elevation="0" Class="d-flex justify-center align-center pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudProgressCircular Color="Color.Info" Size="Size.Large" Indeterminate="true" />
+                        <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando calendario...</MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else if (_citas == null || !_citas.Any())
+            {
+                <MudPaper Elevation="2" Class="pa-8">
+                    <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                        <MudIcon Icon="@Icons.Material.Filled.EventBusy" 
+                                Size="Size.Large" 
+                                Color="Color.Info" 
+                                Style="font-size: 80px;" />
+                        <MudText Typo="Typo.h6" Align="Align.Center">
+                            No hay citas programadas
+                        </MudText>
+                        <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                            El calendario está vacío en este momento
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+            }
+            else
+            {
+                <MudPaper Elevation="3">
+                    <MudTable Items="@_citas" 
+                              Hover="true" 
+                              Breakpoint="Breakpoint.Sm"
+                              Dense="false"
+                              Elevation="0"
+                              Filter="new Func<AppointmentDetailDto,bool>(FilterAppointments)">
+                        <ToolBarContent>
+                            <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-grow-1">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.EventNote" Color="Color.Info" />
+                                    <MudText Typo="Typo.h6">Todas las Citas</MudText>
+                                </MudStack>
+                                <MudStack Row="true" Spacing="2">
+                                    <MudSelect T="string" 
+                                              @bind-Value="_filterStatus" 
+                                              Label="Filtrar por Estado"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              AnchorOrigin="Origin.BottomCenter">
+                                        <MudSelectItem T="string" Value="@("Todos")">Todos los Estados</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("Programada")">Programadas</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("Completada")">Completadas</MudSelectItem>
+                                        <MudSelectItem T="string" Value="@("Cancelada")">Canceladas</MudSelectItem>
+                                    </MudSelect>
+                                    <MudTextField @bind-Value="_searchString" 
+                                                  Placeholder="Buscar..." 
+                                                  Adornment="Adornment.Start" 
+                                                  AdornmentIcon="@Icons.Material.Filled.Search" 
+                                                  IconSize="Size.Medium"
+                                                  Variant="Variant.Outlined"
+                                                  Margin="Margin.Dense"
+                                                  Clearable="true" />
+                                </MudStack>
+                            </MudStack>
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh><MudTableSortLabel SortBy="new Func<AppointmentDetailDto, object>(x => x.AppointmentDate)">
+                                Fecha y Hora
+                            </MudTableSortLabel></MudTh>
+                            <MudTh>Paciente</MudTh>
+                            <MudTh>Doctor</MudTh>
+                            <MudTh>Especialidad</MudTh>
+                            <MudTh>Estado</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Fecha y Hora">
+                                <MudStack Spacing="0">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Info" />
+                                        <MudText Typo="Typo.body1"><strong>@context.AppointmentDate.ToString("dd/MM/yyyy")</strong></MudText>
+                                    </MudStack>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                                        <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Color="Color.Secondary" />
+                                        <MudText Typo="Typo.body2">@context.AppointmentDate.ToString("hh:mm tt")</MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Paciente">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Secondary" Size="Size.Small">
+                                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                    </MudAvatar>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.body1">@context.PatientFirstName @context.PatientLastName</MudText>
+                                        @if (!string.IsNullOrEmpty(context.PatientPhone))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" /> @context.PatientPhone
+                                            </MudText>
+                                        }
+                                    </MudStack>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Doctor">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                                        <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Size="Size.Small" />
+                                    </MudAvatar>
+                                    <MudText Typo="Typo.body1">Dr. @context.DoctorFirstName @context.DoctorLastName</MudText>
+                                </MudStack>
+                            </MudTd>
+                            <MudTd DataLabel="Especialidad">
+                                @if (!string.IsNullOrEmpty(context.DoctorSpecialty))
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.LocalHospital">
+                                        @context.DoctorSpecialty
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Estado">
+                                <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                    @context.Status
+                                </MudChip>
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{10, 25, 50, 100}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudPaper>
+
+                <MudGrid>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Elevation="2">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="Color.Primary" Size="Size.Large" />
+                                    <MudText Typo="Typo.h4">@_citasProgramadas</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Programadas</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Elevation="2">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                                    <MudText Typo="Typo.h4">@_citasCompletadas</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Completadas</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Elevation="2">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Cancel" Color="Color.Error" Size="Size.Large" />
+                                    <MudText Typo="Typo.h4">@_citasCanceladas</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Canceladas</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudCard Elevation="2">
+                            <MudCardContent>
+                                <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudIcon Icon="@Icons.Material.Filled.Event" Color="Color.Info" Size="Size.Large" />
+                                    <MudText Typo="Typo.h4">@_citas.Count</MudText>
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">Total</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
+            }
+
+        </MudStack>
+
+    </MudContainer>
 
 </Autorizacion>
 
 @code {
     private List<AppointmentDetailDto>? _citas;
+    private string _searchString = "";
+    private string _filterStatus = "Todos";
+    private bool _isLoading = true;
+
+    private int _citasProgramadas => _citas?.Count(c => c.Status == "Programada") ?? 0;
+    private int _citasCompletadas => _citas?.Count(c => c.Status == "Completada") ?? 0;
+    private int _citasCanceladas => _citas?.Count(c => c.Status == "Cancelada") ?? 0;
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarCitas();
+    }
+
+    private async Task CargarCitas()
+    {
         try
         {
+            _isLoading = true;
             _citas = await StaffService.ObtenerCitasAsync();
         }
         catch (Exception ex)
         {
-           Console.WriteLine($"Error fetching appointments: {ex.Message}");
+            Snackbar.Add($"Error al cargar citas: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
-    private string GetStatusBadgeClass(string? status)
+    private bool FilterAppointments(AppointmentDetailDto cita)
     {
-        return status switch
-        {
-            "Programada" => "bg-primary",
-            "Finalizada" => "bg-success",
-            "Cancelada" => "bg-danger",
-            _ => "bg-secondary"
-        };
+        if (_filterStatus != "Todos" && cita.Status != _filterStatus)
+            return false;
+
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return true;
+
+        if (cita.PatientFirstName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (cita.PatientLastName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (cita.DoctorFirstName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (cita.DoctorLastName?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (cita.DoctorSpecialty?.Contains(_searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+
+        return false;
     }
+
+    private Color GetStatusColor(string? status) => status switch
+    {
+        "Programada" => Color.Primary,
+        "Completada" => Color.Success,
+        "Cancelada" => Color.Error,
+        _ => Color.Default
+    };
 }

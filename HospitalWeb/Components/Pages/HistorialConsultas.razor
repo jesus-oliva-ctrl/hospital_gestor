@@ -1,7 +1,10 @@
 @page "/historial-consultas"
 @using HospitalData.DTOs
 @using HospitalData.Services
+@using HospitalData.Models
 @inject IDoctorService DoctorService
+@inject IPatientService PatientService
+@inject IStaffService StaffService
 @inject UserSessionService SessionService
 @inject ISnackbar Snackbar
 
@@ -60,6 +63,7 @@
                                 <MudIcon Icon="@Icons.Material.Filled.ListAlt" Class="mr-2" />
                                 Consultas Realizadas
                             </MudText>
+                            @* Se agregó T="string" para corregir error de MudBlazor v7 *@
                             <MudChip T="string" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success">
                                 @_historial.Count consulta@(_historial.Count != 1 ? "s" : "")
                             </MudChip>
@@ -238,7 +242,7 @@
     {
         if (_selectedHistoryRecord == null || SessionService.CurrentUser == null)
         {
-            Snackbar.Add("Error: No se ha seleccionado un paciente o usuario", Severity.Error);
+            Snackbar.Add("Error: Contexto de datos inválido", Severity.Error);
             return;
         }
 
@@ -250,16 +254,23 @@
 
         try
         {
-            int doctorId = await DoctorService.GetMyDoctorIdAsync(SessionService.CurrentUser.UserID);
+            var doctores = await StaffService.ObtenerDoctoresAsync();
+            var miDoctor = doctores.FirstOrDefault(d => d.UserId == SessionService.CurrentUser.UserID);
+
+            if (miDoctor == null)
+            {
+                Snackbar.Add("Error: No se encontró el perfil del médico asociado.", Severity.Error);
+                return;
+            }
 
             var newAppointmentDto = new ScheduleAppointmentDto
             {
                 PatientID = _selectedHistoryRecord.PatientID,
-                DoctorID = doctorId,
+                DoctorID = miDoctor.DoctorId,
                 AppointmentDate = _newFollowUpDate.Value.Date.Add(_newFollowUpTime.Value)
             };
 
-            await DoctorService.ScheduleNewAppointmentAsync(newAppointmentDto);
+            await PatientService.ScheduleAppointmentAsync(newAppointmentDto);
             
             Snackbar.Add("Cita de seguimiento agendada exitosamente", Severity.Success);
             CloseFollowUpDialog();
