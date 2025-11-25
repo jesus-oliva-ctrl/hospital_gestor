@@ -5,129 +5,261 @@
 @using HospitalWeb.Components.Shared 
 @inject IDoctorService DoctorService
 @inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
 
 <PageTitle>Detalle de la Cita</PageTitle>
 
 <Autorizacion RolRequerido="Medico">
 
-    @if (_appointment == null)
+    @if (_isLoading)
     {
-        <p><em>Cargando detalles de la cita...</em></p>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            <MudPaper Elevation="0" Class="d-flex justify-center align-center pa-8">
+                <MudStack AlignItems="AlignItems.Center" Spacing="3">
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando información del paciente...</MudText>
+                </MudStack>
+            </MudPaper>
+        </MudContainer>
+    }
+    else if (_appointment == null)
+    {
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            <MudAlert Severity="Severity.Error" Icon="@Icons.Material.Filled.Error">
+                No se pudo cargar la información de la cita.
+            </MudAlert>
+        </MudContainer>
     }
     else
     {
-        <h3>Atendiendo Cita</h3>
-        
-        <div class="card mb-3">
-            <div class="card-header">
-                <strong>Paciente:</strong> @_appointment.Patient.FirstName @_appointment.Patient.LastName
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item"><strong>Fecha:</strong> @_appointment.AppointmentDate.ToString("g")</li>
-                <li class="list-group-item"><strong>Teléfono:</strong> @_appointment.Patient.Phone</li>
-                <li class="list-group-item"><strong>Estado Actual:</strong> @_appointment.Status</li>
-            </ul>
-        </div>
-
-        <hr />
-
-        <div class="mb-4">
-            <HistorialClinico PatientId="@_appointment.PatientId" />
-        </div>
-
-        <hr />
-
-        <h4>Prescripciones</h4>
-        <div class="row">
-            <div class="col-md-5">
-                <EditForm Model="_newPrescription" OnValidSubmit="HandleAddPrescription" FormName="PrescriptionForm">
-                    <DataAnnotationsValidator />
-                    <div class="mb-3">
-                        <label>Medicamento:</label>
-                        <InputSelect class="form-select" @bind-Value="_newPrescription.MedicationID">
-                            <option value="0">-- Seleccione un medicamento --</option>
-                            @if (_availableMedications != null)
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+            
+            <MudStack Spacing="4">
+                
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.PersonPin" Color="Color.Primary" Size="Size.Large" />
+                            <MudStack Spacing="0">
+                                <MudText Typo="Typo.h4">
+                                    @_appointment.Patient.FirstName @_appointment.Patient.LastName
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Cita: @_appointment.AppointmentDate.ToString("dd/MM/yyyy HH:mm")
+                                </MudText>
+                            </MudStack>
+                        </MudStack>
+                        <MudStack AlignItems="AlignItems.End" Spacing="1">
+                            <MudChip T="string" Icon="@Icons.Material.Filled.Info" Color="@GetStatusColor(_appointment.Status)">
+                                @_appointment.Status
+                            </MudChip>
+                            @if (!string.IsNullOrEmpty(_appointment.Patient.Phone))
                             {
-                                @foreach (var med in _availableMedications)
-                                {
-                                    <option value="@med.MedicationId">@med.Name (Stock: @med.Quantity)</option>
-                                }
+                                <MudChip T="string" Icon="@Icons.Material.Filled.Phone" Color="Color.Info" Size="Size.Small">
+                                    @_appointment.Patient.Phone
+                                </MudChip>
                             }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => _newPrescription.MedicationID)" />
-                    </div>
-                    <div class="mb-3">
-                        <label>Dosis:</label>
-                        <InputText class="form-control" @bind-Value="_newPrescription.Dosage" placeholder="Ej: 1 pastilla cada 8 horas" />
-                        <ValidationMessage For="@(() => _newPrescription.Dosage)" />
-                    </div>
-                    <div class="mb-3">
-                        <label>Cantidad a Despachar:</label>
-                        <InputNumber class="form-control" @bind-Value="_newPrescription.QuantityToDispense" />
-                        <ValidationMessage For="@(() => _newPrescription.QuantityToDispense)" />
-                    </div>
-                    <div class="mb-3">
-                        <label>Fecha de Fin:</label>
-                        <InputDate class="form-control" @bind-Value="_newPrescription.EndDate" />
-                        <ValidationMessage For="@(() => _newPrescription.EndDate)" />
-                    </div>
-                    <button type="submit" class="btn btn-info">Añadir Prescripción</button>
-                </EditForm>
-            </div>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
 
-            <div class="col-md-7">
-                <h5>Prescripciones Emitidas (Historial del Paciente)</h5>
-                @if (_addedPrescriptions == null || !_addedPrescriptions.Any())
-                {
-                    <p>El paciente no tiene prescripciones activas.</p>
-                }
-                else
-                {
-                    <ul class="list-group">
-                        @foreach (var p in _addedPrescriptions)
-                        {
-                            <li class="list-group-item">
-                                <strong>@p.Medication?.Name</strong> (@p.QuantityToDispense unidades)<br />
-                                <small>@p.Dosage. Hasta: @p.EndDate?.ToString("d")</small>
-                            </li>
-                        }
-                    </ul>
-                }
-            </div>
-        </div>
+                <MudGrid>
+                    <MudItem xs="12" lg="6">
+                        <HistorialClinico PatientId="@_appointment.PatientId" />
+                    </MudItem>
 
-        @if (!string.IsNullOrEmpty(_errorMessage)) { <div class="alert alert-danger mt-3">@_errorMessage</div> }
-        @if (!string.IsNullOrEmpty(_successMessage)) { <div class="alert alert-success mt-3">@_successMessage</div> }
+                    <MudItem xs="12" lg="6">
+                        <MudCard Elevation="3">
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudIcon Icon="@Icons.Material.Filled.Medication" Color="Color.Info" Size="Size.Medium" />
+                                        <MudText Typo="Typo.h6">Prescripciones del Paciente</MudText>
+                                    </MudStack>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                @if (_addedPrescriptions == null || !_addedPrescriptions.Any())
+                                {
+                                    <MudAlert Severity="Severity.Info" Dense="true">
+                                        El paciente no tiene prescripciones registradas
+                                    </MudAlert>
+                                }
+                                else
+                                {
+                                    <MudList T="string" Dense="true">
+                                        @foreach (var p in _addedPrescriptions.Take(5))
+                                        {
+                                            <MudListItem T="string" Icon="@Icons.Material.Filled.Medication">
+                                                <MudStack Spacing="0">
+                                                    <MudText Typo="Typo.body1"><strong>@p.Medication?.Name</strong></MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        @p.Dosage · @p.QuantityToDispense unidades
+                                                    </MudText>
+                                                    <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                        Hasta: @p.EndDate?.ToString("dd/MM/yyyy")
+                                                    </MudText>
+                                                </MudStack>
+                                            </MudListItem>
+                                            <MudDivider />
+                                        }
+                                    </MudList>
+                                    @if (_addedPrescriptions.Count > 5)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                                            ... y @(_addedPrescriptions.Count - 5) más
+                                        </MudText>
+                                    }
+                                }
+                            </MudCardContent>
+                        </MudCard>
+                    </MudItem>
+                </MudGrid>
 
-        <hr />
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudStack Spacing="3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Medium" />
+                            <MudText Typo="Typo.h6">Nueva Prescripción</MudText>
+                        </MudStack>
 
-        <h4>Reagendar Cita</h4>
-        <div class="row">
-            <div class="col-md-5">
-                <div class="mb-3">
-                    <label>Nueva Fecha y Hora:</label>
-                    <InputDate @bind-Value="_newScheduleDate" class="form-control" Type="InputDateType.DateTimeLocal" />
-                </div>
-                <button class="btn btn-warning" @onclick="HandleReagendar">Reagendar Cita</button>
-            </div>
-        </div>
+                        <EditForm Model="_newPrescription" OnValidSubmit="HandleAddPrescription">
+                            <DataAnnotationsValidator />
+                            
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudSelect T="int" 
+                                              @bind-Value="_newPrescription.MedicationID"
+                                              Label="Medicamento"
+                                              Variant="Variant.Outlined"
+                                              Required="true"
+                                              AnchorOrigin="Origin.BottomCenter">
+                                        <MudSelectItem T="int" Value="0">-- Seleccione medicamento --</MudSelectItem>
+                                        @if (_availableMedications != null)
+                                        {
+                                            @foreach (var med in _availableMedications)
+                                            {
+                                                <MudSelectItem T="int" Value="@med.MedicationId">
+                                                    @med.Name (Stock: @med.Quantity)
+                                                </MudSelectItem>
+                                            }
+                                        }
+                                    </MudSelect>
+                                </MudItem>
 
-        <hr />
+                                <MudItem xs="12" md="6">
+                                    <MudTextField @bind-Value="_newPrescription.Dosage"
+                                                Label="Dosis"
+                                                Variant="Variant.Outlined"
+                                                Placeholder="Ej: 1 pastilla cada 8 horas"
+                                                Required="true"
+                                                For="@(() => _newPrescription.Dosage)" />
+                                </MudItem>
 
-        <h4>Diagnóstico y Notas</h4>
-        <EditForm Model="this" OnValidSubmit="HandleFinalizarCita">
-            <DataAnnotationsValidator />
-            <div class="mb-3">
-                <label>Notas del Diagnóstico:</label>
-                <InputTextArea @bind-Value="_diagnosisNotes" class="form-control" rows="5" />
-                <ValidationMessage For="@(() => _diagnosisNotes)" />
-            </div>
+                                <MudItem xs="12" md="6">
+                                    <MudNumericField @bind-Value="_newPrescription.QuantityToDispense"
+                                                   Label="Cantidad a Despachar"
+                                                   Variant="Variant.Outlined"
+                                                   Min="1"
+                                                   Required="true"
+                                                   For="@(() => _newPrescription.QuantityToDispense)" />
+                                </MudItem>
 
-            <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-success">Finalizar Cita</button>
-                <button type="button" class="btn btn-danger" @onclick="HandleCancelarCita">Cancelar Cita</button>
-            </div>
-        </EditForm>
+                                <MudItem xs="12" md="6">
+                                    <MudDatePicker @bind-Date="_prescriptionEndDate"
+                                                 Label="Fecha de Fin"
+                                                 Variant="Variant.Outlined"
+                                                 MinDate="DateTime.Today"
+                                                 Required="true"
+                                                 DateFormat="dd/MM/yyyy" />
+                                </MudItem>
+
+                                <MudItem xs="12">
+                                    <MudButton Variant="Variant.Filled"
+                                              Color="Color.Success"
+                                              StartIcon="@Icons.Material.Filled.Add"
+                                              ButtonType="ButtonType.Submit"
+                                              FullWidth="true">
+                                        Añadir Prescripción
+                                    </MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </EditForm>
+                    </MudStack>
+                </MudPaper>
+
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudStack Spacing="3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Warning" Size="Size.Medium" />
+                            <MudText Typo="Typo.h6">Reagendar Cita</MudText>
+                        </MudStack>
+
+                        <MudGrid>
+                            <MudItem xs="12" md="6">
+                                <MudDatePicker @bind-Date="_newScheduleDate"
+                                             Label="Nueva Fecha"
+                                             Variant="Variant.Outlined"
+                                             MinDate="DateTime.Today"
+                                             DateFormat="dd/MM/yyyy" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTimePicker @bind-Time="_newScheduleTime"
+                                             Label="Nueva Hora"
+                                             Variant="Variant.Outlined"
+                                             AmPm="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudButton Variant="Variant.Filled"
+                                          Color="Color.Warning"
+                                          StartIcon="@Icons.Material.Filled.Update"
+                                          OnClick="HandleReagendar"
+                                          FullWidth="true">
+                                    Reagendar esta Cita
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudStack>
+                </MudPaper>
+
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudStack Spacing="3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Size="Size.Medium" />
+                            <MudText Typo="Typo.h6">Diagnóstico y Finalización</MudText>
+                        </MudStack>
+
+                        <MudTextField @bind-Value="_diagnosisNotes"
+                                    Label="Notas del Diagnóstico"
+                                    Variant="Variant.Outlined"
+                                    Lines="5"
+                                    Placeholder="Ingrese el diagnóstico y observaciones de la consulta..."
+                                    Required="true" />
+
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Variant="Variant.Filled"
+                                      Color="Color.Success"
+                                      StartIcon="@Icons.Material.Filled.CheckCircle"
+                                      OnClick="HandleFinalizarCita"
+                                      FullWidth="true"
+                                      Size="Size.Large">
+                                Finalizar Cita
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled"
+                                      Color="Color.Error"
+                                      StartIcon="@Icons.Material.Filled.Cancel"
+                                      OnClick="HandleCancelarCita"
+                                      FullWidth="true"
+                                      Size="Size.Large">
+                                Cancelar Cita
+                            </MudButton>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+
+            </MudStack>
+
+        </MudContainer>
     }
 </Autorizacion>
 
@@ -138,22 +270,24 @@
     private Appointment? _appointment;
     private List<InventoryDto>? _availableMedications;
     private List<Prescription>? _addedPrescriptions;
+    private bool _isLoading = true;
 
     private CreatePrescriptionDto _newPrescription = new();
-    private string? _errorMessage;
-    private string? _successMessage;
-
-    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Las notas del diagnóstico son obligatorias para finalizar una cita.")]
+    private DateTime? _prescriptionEndDate = DateTime.Now.AddDays(7);
     private string _diagnosisNotes = "";
 
-    private DateTime _newScheduleDate = DateTime.Now.AddDays(1);
+    private DateTime? _newScheduleDate;
+    private TimeSpan? _newScheduleTime = new TimeSpan(9, 0, 0);
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
         if (_appointment != null)
         {
-            _newScheduleDate = _appointment.AppointmentDate;
+            _newScheduleDate = _appointment.AppointmentDate.Date;
+            _newScheduleTime = _appointment.AppointmentDate.TimeOfDay;
+            _newScheduleDate = _appointment.AppointmentDate.Date;
+            _newScheduleTime = _appointment.AppointmentDate.TimeOfDay;
         }
     }
 
@@ -161,6 +295,7 @@
     {
         try
         {
+            _isLoading = true;
             _appointment = await DoctorService.GetAppointmentDetailsAsync(AppointmentId);
             _availableMedications = await DoctorService.GetAvailableMedicationsAsync();
 
@@ -174,7 +309,11 @@
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
         }
     }
 
@@ -182,55 +321,82 @@
     {
         if (_appointment == null) return;
 
-        _errorMessage = null;
-        _successMessage = null;
+        if (_prescriptionEndDate.HasValue)
+        {
+            _newPrescription.EndDate = _prescriptionEndDate.Value;
+        }
+
         try
         {
             await DoctorService.CreatePrescriptionAsync(_newPrescription);
-            _successMessage = "Prescripción añadida exitosamente.";
+            Snackbar.Add("Prescripción añadida exitosamente", Severity.Success);
+            
             _newPrescription = new()
             {
                 PatientID = _appointment.PatientId,
                 DoctorID = _appointment.DoctorId
             };
+            _prescriptionEndDate = DateTime.Now.AddDays(7);
+            
             await LoadData();
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
         }
     }
 
     private async Task HandleReagendar()
     {
-        _errorMessage = null;
-        _successMessage = null;
         if (_appointment == null) return;
+
+        if (!_newScheduleDate.HasValue || !_newScheduleTime.HasValue)
+        {
+            Snackbar.Add("Debe seleccionar fecha y hora", Severity.Warning);
+            return;
+        }
 
         var newAppointmentDto = new ScheduleAppointmentDto
         {
             PatientID = _appointment.PatientId,
             DoctorID = _appointment.DoctorId,
-            AppointmentDate = _newScheduleDate
+            AppointmentDate = _newScheduleDate.Value.Date.Add(_newScheduleTime.Value)
         };
 
         try
         {
             await DoctorService.RescheduleAppointmentAsync(_appointment.AppointmentId, newAppointmentDto);
+            Snackbar.Add("Cita reagendada exitosamente", Severity.Success);
+            await Task.Delay(1500);
             NavigationManager.NavigateTo("/panel-doctor");
         }
         catch (Exception ex)
         {
-            _errorMessage = $"Error al reagendar: {ex.Message}";
+            Snackbar.Add($"Error al reagendar: {ex.Message}", Severity.Error);
         }
     }
 
     private async Task HandleFinalizarCita()
     {
+        if (string.IsNullOrWhiteSpace(_diagnosisNotes))
+        {
+            Snackbar.Add("Debe ingresar las notas del diagnóstico", Severity.Warning);
+            return;
+        }
+
         if (_appointment != null)
         {
-            await DoctorService.CompleteAppointmentAsync(_appointment.AppointmentId, _diagnosisNotes);
-            NavigationManager.NavigateTo("/panel-doctor");
+            try
+            {
+                await DoctorService.CompleteAppointmentAsync(_appointment.AppointmentId, _diagnosisNotes);
+                Snackbar.Add("Cita finalizada exitosamente", Severity.Success);
+                await Task.Delay(1500);
+                NavigationManager.NavigateTo("/panel-doctor");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
         }
     }
 
@@ -238,8 +404,25 @@
     {
         if (_appointment != null)
         {
-            await DoctorService.CancelAppointmentAsync(_appointment.AppointmentId);
-            NavigationManager.NavigateTo("/panel-doctor");
+            try
+            {
+                await DoctorService.CancelAppointmentAsync(_appointment.AppointmentId);
+                Snackbar.Add("Cita cancelada", Severity.Info);
+                await Task.Delay(1500);
+                NavigationManager.NavigateTo("/panel-doctor");
+            }
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            }
         }
     }
+
+    private Color GetStatusColor(string? status) => status switch
+    {
+        "Programada" => Color.Primary,
+        "Completada" => Color.Success,
+        "Cancelada" => Color.Error,
+        _ => Color.Default
+    };
 }
