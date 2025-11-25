@@ -1,6 +1,6 @@
-🏥 Hospital Gestor
+🏥 SaludSys
 
-Hospital Gestor es una solución integral para la administración de centros médicos, desarrollada con tecnologías modernas de Microsoft. Esta aplicación web permite la gestión eficiente de pacientes, doctores, citas médicas, inventarios farmacéuticos e historiales clínicos mediante una interfaz intuitiva y responsiva.
+SaludSys es una solución integral para la administración de centros médicos, desarrollada con tecnologías modernas de Microsoft. Esta aplicación web permite la gestión eficiente de pacientes, doctores, citas médicas, inventarios farmacéuticos e historiales clínicos mediante una interfaz intuitiva y responsiva.
 
 🚀 Tecnologías Utilizadas
 
