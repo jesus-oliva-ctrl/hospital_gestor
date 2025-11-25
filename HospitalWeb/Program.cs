@@ -12,22 +12,29 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddRazorPages();
 
+// Modulo Base de Datos
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalDB"))
 );
 
 builder.Services.AddMudServices();
 
+
+// Modulo Autenticacion
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddSingleton<UserSessionService>();
 
+
+//Modulo de Servicios de Dominio
 builder.Services.AddScoped<IStaffService, StaffService>();
 
 builder.Services.AddScoped<IDoctorService, DoctorService>();
 
 builder.Services.AddScoped<IPatientService, PatientService>();
 
+
+//Modulo de Servicios Transversales
 builder.Services.AddScoped<IAppointmentManagementService, AppointmentManagementService>();
 
 builder.Services.AddScoped<IPrescriptionManagementService, PrescriptionManagementService>();

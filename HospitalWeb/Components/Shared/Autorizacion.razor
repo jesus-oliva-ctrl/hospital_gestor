@@ -17,9 +17,6 @@
 
     private bool UsuarioAutorizado()
     {
-        // La lógica del "guardia de seguridad":
-        // 1. ¿Hay alguien logueado? (CurrentUser no es nulo)
-        // 2. ¿El rol del usuario logueado es el que se requiere?
         return SessionService.CurrentUser != null && SessionService.CurrentUser.RoleName == RolRequerido;
     }
 }
