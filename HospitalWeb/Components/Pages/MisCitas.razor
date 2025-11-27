@@ -101,13 +101,11 @@
                                 </MudStack>
                             </MudTd>
                             <MudTd DataLabel="Especialidad">
-                                @* CORRECCIÓN AQUÍ: T="string" *@
                                 <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.LocalHospital">
                                     @context.DoctorSpecialty
                                 </MudChip>
                             </MudTd>
                             <MudTd DataLabel="Estado">
-                                @* CORRECCIÓN AQUÍ: T="string" *@
                                 <MudChip T="string" Size="Size.Small" Color="@GetStatusColor(context.Status)">
                                     @context.Status
                                 </MudChip>
@@ -142,39 +140,69 @@
 
 </Autorizacion>
 
-<MudDialog @bind-IsVisible="_showCancelDialog" Options="_dialogOptions">
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mr-2" />
-            Confirmar Cancelación
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        <MudText>¿Está seguro que desea cancelar esta cita médica?</MudText>
-        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
-            Esta acción no se puede deshacer.
-        </MudText>
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Text" OnClick="@(() => _showCancelDialog = false)">Volver</MudButton>
-        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="ConfirmCancelAppointment">
-            Cancelar Cita
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+@if (_showCancelDialog)
+{
+    <MudOverlay Visible="true" DarkBackground="true" OnClick="CloseCancelDialog" />
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1400; width: 90%; max-width: 500px;">
+        <MudPaper Elevation="8" Class="pa-6">
+            <MudStack Spacing="3">
+                <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Class="mr-2" />
+                        Confirmar Cancelación
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                                  Color="Color.Default" 
+                                  OnClick="CloseCancelDialog" />
+                </MudStack>
+
+                <MudDivider />
+
+                <MudAlert Severity="Severity.Warning" Dense="true">
+                    <MudText Typo="Typo.body1">
+                        ¿Está seguro que desea cancelar esta cita médica?
+                    </MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2">
+                        Esta acción no se puede deshacer.
+                    </MudText>
+                </MudAlert>
+
+                <MudDivider />
+
+                <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd">
+                    <MudButton Variant="Variant.Text" 
+                              Color="Color.Default"
+                              OnClick="CloseCancelDialog"
+                              Disabled="_isCanceling">
+                        Volver
+                    </MudButton>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Error" 
+                               OnClick="ConfirmCancelAppointment"
+                               StartIcon="@Icons.Material.Filled.Cancel"
+                               Disabled="_isCanceling">
+                        @if (_isCanceling)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Cancelando...</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Cancelar Cita</MudText>
+                        }
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+    </div>
+}
 
 @code {
     private List<VwPatientAppointment>? _myAppointments;
     private bool _isLoading = true;
     private bool _showCancelDialog = false;
+    private bool _isCanceling = false;
     private int _appointmentToCancel = 0;
-
-    private DialogOptions _dialogOptions = new DialogOptions 
-    { 
-        MaxWidth = MaxWidth.Small, 
-        FullWidth = true,
-        CloseOnEscapeKey = true 
-    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -191,6 +219,12 @@
         try
         {
             _isLoading = true;
+            
+            if (SessionService.CurrentUser == null)
+            {
+                Snackbar.Add("Error: Usuario no autenticado", Severity.Error);
+                return;
+            }
             
             int patientId = await PatientService.GetPatientIdByUserIdAsync(SessionService.CurrentUser.UserID);
             
@@ -220,21 +254,39 @@
         _showCancelDialog = true;
     }
 
-    private async Task ConfirmCancelAppointment()
+    private void CloseCancelDialog()
     {
         _showCancelDialog = false;
-        
+        _appointmentToCancel = 0;
+        _isCanceling = false;
+    }
+
+    private async Task ConfirmCancelAppointment()
+    {
+        if (_isCanceling)
+        {
+            return;
+        }
+
+        _isCanceling = true;
+
         try
         {
             await PatientService.CancelAppointmentAsync(_appointmentToCancel);
             
             Snackbar.Add("Cita cancelada exitosamente", Severity.Success);
             
+            CloseCancelDialog();
+            
             await LoadAppointments();
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al cancelar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isCanceling = false;
         }
     }
 }

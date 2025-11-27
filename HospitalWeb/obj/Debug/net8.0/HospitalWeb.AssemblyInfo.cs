@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("HospitalWeb")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+fa47d48e79aba9207253daeb19c2e5d928d7c4a1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4f454dd6599e980cf4e12281a540467a88500c8")]
 [assembly: System.Reflection.AssemblyProductAttribute("HospitalWeb")]
 [assembly: System.Reflection.AssemblyTitleAttribute("HospitalWeb")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

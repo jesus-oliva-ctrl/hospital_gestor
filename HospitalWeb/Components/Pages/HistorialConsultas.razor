@@ -3,7 +3,6 @@
 @using HospitalData.Services
 @using HospitalData.Models
 @inject IDoctorService DoctorService
-@inject IPatientService PatientService
 @inject IStaffService StaffService
 @inject UserSessionService SessionService
 @inject ISnackbar Snackbar
@@ -63,7 +62,6 @@
                                 <MudIcon Icon="@Icons.Material.Filled.ListAlt" Class="mr-2" />
                                 Consultas Realizadas
                             </MudText>
-                            @* Se agregó T="string" para corregir error de MudBlazor v7 *@
                             <MudChip T="string" Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success">
                                 @_historial.Count consulta@(_historial.Count != 1 ? "s" : "")
                             </MudChip>
@@ -134,69 +132,91 @@
 
 </Autorizacion>
 
-<MudDialog @bind-IsVisible="_showFollowUpDialog" Options="_dialogOptions">
-    <TitleContent>
-        <MudText Typo="Typo.h6">
-            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" Class="mr-2" />
-            Agendar Cita de Seguimiento
-        </MudText>
-    </TitleContent>
-    <DialogContent>
-        @if (_selectedHistoryRecord != null)
-        {
+@* OVERLAY PARA EL DIÁLOGO *@
+@if (_showFollowUpDialog)
+{
+    <MudOverlay Visible="true" DarkBackground="true" OnClick="CloseFollowUpDialog" />
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1400; width: 90%; max-width: 600px;">
+        <MudPaper Elevation="8" Class="pa-6">
             <MudStack Spacing="3">
-                <MudAlert Severity="Severity.Info" Dense="true">
-                    <MudStack Spacing="1">
-                        <MudText Typo="Typo.body2">
-                            <strong>Paciente:</strong> @_selectedHistoryRecord.PatientFirstName @_selectedHistoryRecord.PatientLastName
-                        </MudText>
-                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            Consulta anterior: @_selectedHistoryRecord.VisitDate.ToString("dd/MM/yyyy")
-                        </MudText>
+                <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <MudText Typo="Typo.h6">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" Class="mr-2" />
+                        Agendar Cita de Seguimiento
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Close" 
+                                  Color="Color.Default" 
+                                  OnClick="CloseFollowUpDialog" />
+                </MudStack>
+
+                <MudDivider />
+
+                @if (_selectedHistoryRecord != null)
+                {
+                    <MudAlert Severity="Severity.Info" Dense="true">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.body2">
+                                <strong>Paciente:</strong> @_selectedHistoryRecord.PatientFirstName @_selectedHistoryRecord.PatientLastName
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                Consulta anterior: @_selectedHistoryRecord.VisitDate.ToString("dd/MM/yyyy")
+                            </MudText>
+                        </MudStack>
+                    </MudAlert>
+
+                    <MudDatePicker @bind-Date="_newFollowUpDate"
+                                 Label="Fecha del Seguimiento"
+                                 Variant="Variant.Outlined"
+                                 MinDate="DateTime.Today"
+                                 Required="true"
+                                 DateFormat="dd/MM/yyyy" />
+
+                    <MudTimePicker @bind-Time="_newFollowUpTime"
+                                 Label="Hora del Seguimiento"
+                                 Variant="Variant.Outlined"
+                                 Required="true"
+                                 AmPm="true" />
+
+                    <MudDivider />
+
+                    <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd">
+                        <MudButton Variant="Variant.Text" 
+                                  Color="Color.Default"
+                                  OnClick="CloseFollowUpDialog"
+                                  Disabled="_isSubmitting">
+                            Cancelar
+                        </MudButton>
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   OnClick="HandleScheduleFollowUp"
+                                   StartIcon="@Icons.Material.Filled.CheckCircle"
+                                   Disabled="_isSubmitting">
+                            @if (_isSubmitting)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Agendando...</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Agendar Cita</MudText>
+                            }
+                        </MudButton>
                     </MudStack>
-                </MudAlert>
-
-                <MudDatePicker @bind-Date="_newFollowUpDate"
-                             Label="Fecha del Seguimiento"
-                             Variant="Variant.Outlined"
-                             MinDate="DateTime.Today"
-                             Required="true"
-                             DateFormat="dd/MM/yyyy" />
-
-                <MudTimePicker @bind-Time="_newFollowUpTime"
-                             Label="Hora del Seguimiento"
-                             Variant="Variant.Outlined"
-                             Required="true"
-                             AmPm="true" />
+                }
             </MudStack>
-        }
-    </DialogContent>
-    <DialogActions>
-        <MudButton Variant="Variant.Text" OnClick="CloseFollowUpDialog">Cancelar</MudButton>
-        <MudButton Variant="Variant.Filled" 
-                   Color="Color.Primary" 
-                   OnClick="HandleScheduleFollowUp"
-                   StartIcon="@Icons.Material.Filled.CheckCircle">
-            Agendar Cita
-        </MudButton>
-    </DialogActions>
-</MudDialog>
+        </MudPaper>
+    </div>
+}
 
 @code 
 {
     private List<MedicalHistoryDto>? _historial;
     private bool _isLoading = true;
     private bool _showFollowUpDialog = false;
+    private bool _isSubmitting = false;
     private MedicalHistoryDto? _selectedHistoryRecord;
     private DateTime? _newFollowUpDate = DateTime.Now.AddDays(7);
     private TimeSpan? _newFollowUpTime = new TimeSpan(9, 0, 0);
-
-    private DialogOptions _dialogOptions = new DialogOptions 
-    { 
-        MaxWidth = MaxWidth.Small, 
-        FullWidth = true,
-        CloseOnEscapeKey = true 
-    };
 
     protected override async Task OnInitializedAsync()
     {
@@ -211,6 +231,13 @@
         try
         {
             _isLoading = true;
+            
+            if (SessionService.CurrentUser == null)
+            {
+                Snackbar.Add("Error: Usuario no autenticado", Severity.Error);
+                return;
+            }
+            
             int doctorUserId = SessionService.CurrentUser.UserID;
             _historial = await DoctorService.GetMyMedicalHistoryAsync(doctorUserId);
         }
@@ -236,24 +263,40 @@
     {
         _showFollowUpDialog = false;
         _selectedHistoryRecord = null;
+        _isSubmitting = false;
     }
 
     private async Task HandleScheduleFollowUp()
     {
-        if (_selectedHistoryRecord == null || SessionService.CurrentUser == null)
+        if (_isSubmitting)
         {
-            Snackbar.Add("Error: Contexto de datos inválido", Severity.Error);
             return;
         }
 
-        if (!_newFollowUpDate.HasValue || !_newFollowUpTime.HasValue)
-        {
-            Snackbar.Add("Debe seleccionar fecha y hora para la cita", Severity.Warning);
-            return;
-        }
+        _isSubmitting = true;
 
         try
         {
+            // Validaciones
+            if (_selectedHistoryRecord == null)
+            {
+                Snackbar.Add("Error: No hay registro seleccionado", Severity.Error);
+                return;
+            }
+            
+            if (SessionService.CurrentUser == null)
+            {
+                Snackbar.Add("Error: Usuario no autenticado", Severity.Error);
+                return;
+            }
+
+            if (!_newFollowUpDate.HasValue || !_newFollowUpTime.HasValue)
+            {
+                Snackbar.Add("Debe seleccionar fecha y hora para la cita", Severity.Warning);
+                return;
+            }
+
+            // Obtener el doctor actual
             var doctores = await StaffService.ObtenerDoctoresAsync();
             var miDoctor = doctores.FirstOrDefault(d => d.UserId == SessionService.CurrentUser.UserID);
 
@@ -263,6 +306,7 @@
                 return;
             }
 
+            // Crear el DTO para la nueva cita
             var newAppointmentDto = new ScheduleAppointmentDto
             {
                 PatientID = _selectedHistoryRecord.PatientID,
@@ -270,14 +314,22 @@
                 AppointmentDate = _newFollowUpDate.Value.Date.Add(_newFollowUpTime.Value)
             };
 
-            await PatientService.ScheduleAppointmentAsync(newAppointmentDto);
+            // Agendar la cita
+            await DoctorService.ScheduleNewAppointmentAsync(newAppointmentDto);
             
             Snackbar.Add("Cita de seguimiento agendada exitosamente", Severity.Success);
             CloseFollowUpDialog();
+            
+            // Recargar historial
+            await LoadHistorial();
         }
         catch (Exception ex)
         {
             Snackbar.Add($"Error al agendar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSubmitting = false;
         }
     }
 }
