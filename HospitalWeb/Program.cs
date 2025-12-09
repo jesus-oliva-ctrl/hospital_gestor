@@ -33,6 +33,8 @@ builder.Services.AddScoped<IDoctorService, DoctorService>();
 
 builder.Services.AddScoped<IPatientService, PatientService>();
 
+builder.Services.AddScoped<ILabResultService, LabResultService>();
+
 
 //Modulo de Servicios Transversales
 builder.Services.AddScoped<IAppointmentManagementService, AppointmentManagementService>();

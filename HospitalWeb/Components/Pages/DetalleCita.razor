@@ -4,8 +4,10 @@
 @using HospitalData.DTOs
 @using HospitalWeb.Components.Shared 
 @inject IDoctorService DoctorService
+@inject ILabResultService LabService
 @inject NavigationManager NavigationManager
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Detalle de la Cita</PageTitle>
 
@@ -74,7 +76,7 @@
                                 <CardHeaderContent>
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <MudIcon Icon="@Icons.Material.Filled.Medication" Color="Color.Info" Size="Size.Medium" />
-                                        <MudText Typo="Typo.h6">Prescripciones del Paciente</MudText>
+                                        <MudText Typo="Typo.h6">Prescripciones Vigentes</MudText>
                                     </MudStack>
                                 </CardHeaderContent>
                             </MudCardHeader>
@@ -82,7 +84,7 @@
                                 @if (_addedPrescriptions == null || !_addedPrescriptions.Any())
                                 {
                                     <MudAlert Severity="Severity.Info" Dense="true">
-                                        El paciente no tiene prescripciones registradas
+                                        El paciente no tiene prescripciones registradas.
                                     </MudAlert>
                                 }
                                 else
@@ -104,23 +106,110 @@
                                             <MudDivider />
                                         }
                                     </MudList>
-                                    @if (_addedPrescriptions.Count > 5)
-                                    {
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
-                                            ... y @(_addedPrescriptions.Count - 5) más
-                                        </MudText>
-                                    }
                                 }
                             </MudCardContent>
                         </MudCard>
                     </MudItem>
                 </MudGrid>
 
+                <MudCard Elevation="3">
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Science" Color="Color.Secondary" Size="Size.Medium" />
+                                <MudText Typo="Typo.h6">Resultados de Laboratorio (Historial)</MudText>
+                            </MudStack>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (_labResults == null || !_labResults.Any())
+                        {
+                            <MudAlert Severity="Severity.Info" Dense="true">
+                                No se encontraron resultados de laboratorio previos.
+                            </MudAlert>
+                        }
+                        else
+                        {
+                            <MudTable Items="@_labResults" Hover="true" Dense="true" Elevation="0">
+                                <HeaderContent>
+                                    <MudTh>Fecha</MudTh>
+                                    <MudTh>Examen</MudTh>
+                                    <MudTh>Estado</MudTh>
+                                    <MudTh>Acción</MudTh>
+                                </HeaderContent>
+                                <RowTemplate Context="result">
+                                    <MudTd>@result.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudTd>
+                                    <MudTd><strong>@result.TestName</strong></MudTd>
+                                    <MudTd>
+                                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">Finalizado</MudChip>
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudButton Variant="Variant.Outlined" 
+                                                   Color="Color.Primary" 
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => ShowLabDetails(result))">
+                                            Ver Detalles
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        }
+                    </MudCardContent>
+                </MudCard>
+
+                <MudPaper Elevation="3" Class="pa-4">
+                    <MudStack Spacing="3">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                            <MudIcon Icon="@Icons.Material.Filled.Biotech" Color="Color.Tertiary" Size="Size.Medium" />
+                            <MudText Typo="Typo.h6">Solicitar Exámenes de Laboratorio</MudText>
+                        </MudStack>
+
+                        <MudGrid AlignItems="AlignItems.End">
+                            <MudItem xs="12" md="8">
+                                <MudSelect T="int" @bind-Value="_selectedTestId" 
+                                           Label="Seleccione el estudio a realizar" 
+                                           Variant="Variant.Outlined" 
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           Dense="true">
+                                    <MudSelectItem Value="0">-- Seleccionar --</MudSelectItem>
+                                    @if (_availableTests != null)
+                                    {
+                                        @foreach (var group in _availableTests.GroupBy(t => t.AreaName))
+                                        {
+                                            <MudListSubheader>@group.Key</MudListSubheader>
+                                            @foreach (var test in group)
+                                            {
+                                                <MudSelectItem Value="@test.TestId">
+                                                    @test.TestName - $@test.Price
+                                                </MudSelectItem>
+                                            }
+                                        }
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" md="4">
+                                <MudButton Variant="Variant.Filled" 
+                                           Color="Color.Tertiary" 
+                                           StartIcon="@Icons.Material.Filled.Send"
+                                           OnClick="HandleSolicitarLaboratorio"
+                                           Disabled="@(_isSendingLabRequest || _selectedTestId == 0)"
+                                           FullWidth="true">
+                                    @(_isSendingLabRequest ? "Enviando..." : "Enviar Solicitud")
+                                </MudButton>
+                            </MudItem>
+                        </MudGrid>
+                        
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            * Al enviar la solicitud, la cita cambiará a estado "En Laboratorio" automáticamente.
+                        </MudText>
+                    </MudStack>
+                </MudPaper>
+
                 <MudPaper Elevation="3" Class="pa-4">
                     <MudStack Spacing="3">
                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                             <MudIcon Icon="@Icons.Material.Filled.AddCircle" Color="Color.Success" Size="Size.Medium" />
-                            <MudText Typo="Typo.h6">Nueva Prescripción</MudText>
+                            <MudText Typo="Typo.h6">Nueva Prescripción Médica</MudText>
                         </MudStack>
 
                         <EditForm Model="_newPrescription" OnValidSubmit="HandleAddPrescription">
@@ -268,24 +357,28 @@
     public int AppointmentId { get; set; }
 
     private Appointment? _appointment;
+    private bool _isLoading = true;
+    
     private List<InventoryDto>? _availableMedications;
     private List<Prescription>? _addedPrescriptions;
-    private bool _isLoading = true;
+    private List<LabResult>? _labResults;          
+    private List<LabTestDto>? _availableTests;     
 
     private CreatePrescriptionDto _newPrescription = new();
     private DateTime? _prescriptionEndDate = DateTime.Now.AddDays(7);
     private string _diagnosisNotes = "";
-
+    
     private DateTime? _newScheduleDate;
     private TimeSpan? _newScheduleTime = new TimeSpan(9, 0, 0);
+
+    private int _selectedTestId;
+    private bool _isSendingLabRequest = false;
 
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
         if (_appointment != null)
         {
-            _newScheduleDate = _appointment.AppointmentDate.Date;
-            _newScheduleTime = _appointment.AppointmentDate.TimeOfDay;
             _newScheduleDate = _appointment.AppointmentDate.Date;
             _newScheduleTime = _appointment.AppointmentDate.TimeOfDay;
         }
@@ -297,7 +390,9 @@
         {
             _isLoading = true;
             _appointment = await DoctorService.GetAppointmentDetailsAsync(AppointmentId);
+            
             _availableMedications = await DoctorService.GetAvailableMedicationsAsync();
+            _availableTests = await DoctorService.GetAvailableLabTestsAsync(); // Catálogo de Exámenes
 
             if (_appointment != null)
             {
@@ -305,6 +400,8 @@
 
                 _newPrescription.PatientID = _appointment.PatientId;
                 _newPrescription.DoctorID = _appointment.DoctorId;
+
+                _labResults = await LabService.GetHistoryByPatientIdAsync(_appointment.PatientId);
             }
         }
         catch (Exception ex)
@@ -316,6 +413,45 @@
             _isLoading = false;
         }
     }
+
+
+    private void ShowLabDetails(LabResult result)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Result", result);
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        DialogService.Show<LabResultDialog>("Detalle de Resultados", parameters, options);
+    }
+
+    private async Task HandleSolicitarLaboratorio()
+    {
+        if (_selectedTestId == 0)
+        {
+            Snackbar.Add("Debe seleccionar un examen.", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            _isSendingLabRequest = true;
+            await DoctorService.CreateLabRequestAsync(AppointmentId, _selectedTestId);
+            
+            Snackbar.Add("Solicitud enviada correctamente al laboratorio.", Severity.Success);
+            
+            await LoadData(); 
+            _selectedTestId = 0; 
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add(ex.Message, Severity.Error);
+        }
+        finally
+        {
+            _isSendingLabRequest = false;
+        }
+    }
+
 
     private async Task HandleAddPrescription()
     {
@@ -338,7 +474,7 @@
             };
             _prescriptionEndDate = DateTime.Now.AddDays(7);
             
-            await LoadData();
+            await LoadData(); 
         }
         catch (Exception ex)
         {
@@ -421,6 +557,7 @@
     private Color GetStatusColor(string? status) => status switch
     {
         "Programada" => Color.Primary,
+        "En Laboratorio" => Color.Warning, 
         "Completada" => Color.Success,
         "Cancelada" => Color.Error,
         _ => Color.Default

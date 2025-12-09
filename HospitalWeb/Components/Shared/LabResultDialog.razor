@@ -1,0 +1,55 @@
+@using MudBlazor
+@using HospitalData.Models
+
+<MudDialog>
+    <DialogContent>
+        <MudStack Spacing="3">
+            @if (Result != null)
+            {
+                <MudText Typo="Typo.subtitle1">Examen: <strong>@Result.TestName</strong></MudText>
+                <MudText Typo="Typo.caption">Fecha: @Result.Date.ToLocalTime()</MudText>
+                
+                <MudDivider />
+
+                @if (Result.Results != null)
+                {
+                    <MudGrid>
+                        @foreach (var item in Result.Results)
+                        {
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@item.Key</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                @if (item.Value != null && (item.Key.Contains("ImagenURL") || item.Key.Contains("Archivo")))
+                                {
+                                    <MudLink Href="@item.Value.ToString()" Target="_blank">Ver Archivo Adjunto</MudLink>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body1"><strong>@item.Value</strong></MudText>
+                                }
+                            </MudItem>
+                            <MudItem xs="12"><MudDivider Light="true"/></MudItem>
+                        }
+                    </MudGrid>
+                }
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Warning">No se pudieron cargar los detalles.</MudAlert>
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } 
+
+    [Parameter] public LabResult Result { get; set; }
+
+    void Cancel() => MudDialog.Cancel();
+}

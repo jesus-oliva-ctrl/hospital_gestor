@@ -23,7 +23,7 @@ namespace HospitalData.Services
             try
             {
                 await _context.Database.ExecuteSqlInterpolatedAsync($@"
-          4          EXEC SP_IssueNewPrescription
+                      EXEC SP_IssueNewPrescription
                         @PatientID = {dto.PatientID},
                         @DoctorID = {dto.DoctorID},
                         @MedicationID = {dto.MedicationID},

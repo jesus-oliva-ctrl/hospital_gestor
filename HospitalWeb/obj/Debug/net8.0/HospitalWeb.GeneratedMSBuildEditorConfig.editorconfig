@@ -93,6 +93,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QYW5lbERvY3Rvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/PanelLaboratorio.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9QYW5lbExhYm9yYXRvcmlvLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/ProcesarExamen.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Qcm9jZXNhckV4YW1lbi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/Weather.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9XZWF0aGVyLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -103,6 +111,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Shared/Autorizacion.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvQXV0b3JpemFjaW9uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Shared/LabResultDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvTGFiUmVzdWx0RGlhbG9nLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/_Imports.razor]

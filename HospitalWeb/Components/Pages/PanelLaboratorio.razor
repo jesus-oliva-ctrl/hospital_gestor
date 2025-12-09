@@ -1,0 +1,98 @@
+@page "/panel-laboratorio"
+@using HospitalData.DTOs
+@using HospitalData.Services
+@inject ILabResultService LabService
+@inject UserSessionService SessionService
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Panel de Laboratorio</PageTitle>
+
+<Autorizacion RolRequerido="Laboratorista">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+        
+        <MudText Typo="Typo.h4" Class="mb-4">🔬 Mis Solicitudes Pendientes</MudText>
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+            Listado filtrado.
+        </MudText>
+
+        @if (_isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+        }
+        else if (_pendingRequests == null || !_pendingRequests.Any())
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="my-4">
+                ¡Todo al día! No tienes solicitudes pendientes en tu área.
+            </MudAlert>
+        }
+        else
+        {
+            <MudTable Items="@_pendingRequests" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="3">
+                <HeaderContent>
+                    <MudTh>Fecha Solicitud</MudTh>
+                    <MudTh>Paciente</MudTh>
+                    <MudTh>Examen Requerido</MudTh>
+                    <MudTh>Doctor Solicitante</MudTh>
+                    <MudTh>Acción</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Fecha">@context.RequestDate.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                    <MudTd DataLabel="Paciente"><strong>@context.PatientName</strong></MudTd>
+                    <MudTd DataLabel="Examen">
+                        <MudChip T="string" Color="Color.Info" Size="Size.Small">@context.TestName</MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Doctor">@context.DoctorName</MudTd>
+                    <MudTd DataLabel="Acción">
+                        <MudButton Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   StartIcon="@Icons.Material.Filled.Science"
+                                   OnClick="@(() => AtenderSolicitud(context.RequestID))">
+                            Procesar
+                        </MudButton>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudContainer>
+</Autorizacion>
+
+@code {
+    private List<LabRequestDto> _pendingRequests = new();
+    private bool _isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            _isLoading = true;
+            var currentUser = SessionService.CurrentUser;
+
+            if (currentUser != null)
+            {
+                _pendingRequests = await LabService.GetPendingRequestsForUserAsync(currentUser.UserID);
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar solicitudes: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void AtenderSolicitud(int requestId)
+    {
+        Nav.NavigateTo($"/procesar-examen/{requestId}");
+    }
+}

@@ -183,7 +183,37 @@ namespace HospitalData.Services
         {
             await _userAccountService.UpdateUserProfileAsync(dto);
         }
+
+        public async Task<List<LabTestDto>> GetAvailableLabTestsAsync()
+        {
+            var tests = await _context.Database.SqlQueryRaw<LabTestDto>(@"
+                SELECT 
+                    T.TestID, 
+                    T.TestName, 
+                    A.AreaName, 
+                    T.Price
+                FROM LabTests T
+                INNER JOIN LabAreas A ON T.AreaID = A.AreaID
+                WHERE T.IsActive = 1
+                ORDER BY A.AreaName, T.TestName
+            ").ToListAsync();
+
+            return tests;
+        }
+
+        public async Task CreateLabRequestAsync(int appointmentId, int testId)
+        {
+            try 
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($"EXEC SP_CreateLabRequest @AppointmentID={appointmentId}, @TestID={testId}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al solicitar laboratorio: {ex.Message}");
+            }
+        }
     }
+
     
     
 }

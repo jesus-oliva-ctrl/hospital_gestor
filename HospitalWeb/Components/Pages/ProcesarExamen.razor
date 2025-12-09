@@ -1,0 +1,225 @@
+@page "/procesar-examen/{RequestId:int}"
+@using HospitalData.DTOs
+@using HospitalData.Models
+@using HospitalData.Services
+@using Microsoft.AspNetCore.Hosting
+@using System.IO
+@inject ILabResultService LabService
+@inject UserSessionService SessionService
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+@inject IWebHostEnvironment Environment 
+
+<PageTitle>Procesar Examen</PageTitle>
+
+<Autorizacion RolRequerido="Laboratorista">
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+        
+        @if (_isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+        }
+        else if (_request == null)
+        {
+            <MudAlert Severity="Severity.Error">Solicitud no encontrada.</MudAlert>
+        }
+        else
+        {
+            <MudCard Elevation="3">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5">🧪 Procesar Muestra</MudText>
+                        <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                            @_request.TestName - Paciente: <strong>@_request.PatientName</strong>
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+
+                <MudCardContent>
+                    <MudText Typo="Typo.h6" Class="mb-3">Parámetros del Análisis</MudText>
+                    
+                    <MudGrid>
+                        @foreach (var item in _resultadosDinamicos)
+                        {
+                            <MudItem xs="5">
+                                <MudTextField @bind-Value="item.Key" Label="Parámetro" Variant="Variant.Outlined" Dense="true" />
+                            </MudItem>
+                            <MudItem xs="5">
+                                <MudTextField @bind-Value="item.Value" Label="Resultado" Variant="Variant.Outlined" Dense="true" />
+                            </MudItem>
+                            <MudItem xs="2" Class="d-flex align-center">
+                                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => RemoverFila(item))" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Filled.Add" Color="Color.Primary" OnClick="AgregarFila" Class="mt-2">
+                        Agregar Parámetro
+                    </MudButton>
+
+                    <MudDivider Class="my-4" />
+                    
+                    <MudText Typo="Typo.h6" Class="mb-3">Adjuntar Evidencias (PDF, Imágenes)</MudText>
+                    
+                    <InputFile id="fileInput" OnChange="UploadFiles" hidden multiple accept=".jpg, .jpeg, .png, .pdf" />
+                    
+                    <MudButton HtmlTag="label"
+                               Variant="Variant.Filled"
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.CloudUpload"
+                               for="fileInput">
+                        Subir Archivos
+                    </MudButton>
+
+                    @if (_uploadedFiles.Any())
+                    {
+                        <MudList T="string" Dense="true" Class="mt-2">
+                            @foreach (var file in _uploadedFiles)
+                            {
+                                <MudListItem T="string" Icon="@Icons.Material.Filled.AttachFile">
+                                    @file.Name (@(file.Size / 1024) KB)
+                                </MudListItem>
+                            }
+                        </MudList>
+                    }
+
+                    <MudDivider Class="my-4" />
+                    
+                    <MudTextField @bind-Value="_observaciones" Label="Observaciones / Conclusiones" Variant="Variant.Outlined" Lines="3" />
+
+                </MudCardContent>
+
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" FullWidth="true" OnClick="GuardarResultados" Class="py-2" Disabled="_isSaving">
+                        @(_isSaving ? "Guardando..." : "Finalizar y Enviar al Doctor")
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        }
+    </MudContainer>
+</Autorizacion>
+
+@code {
+    [Parameter] public int RequestId { get; set; }
+
+    private LabRequestDto? _request;
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private string _observaciones = "";
+    
+    // Lista para textos
+    private List<ResultItem> _resultadosDinamicos = new List<ResultItem> 
+    { 
+        new ResultItem { Key = "Resultado General", Value = "" } 
+    };
+
+    // Lista para archivos (NUEVO)
+    private IList<IBrowserFile> _uploadedFiles = new List<IBrowserFile>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _request = await LabService.GetRequestByIdAsync(RequestId);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void AgregarFila() => _resultadosDinamicos.Add(new ResultItem());
+    private void RemoverFila(ResultItem item) => _resultadosDinamicos.Remove(item);
+
+    // Método que se ejecuta al seleccionar archivos
+    private void UploadFiles(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles())
+        {
+            _uploadedFiles.Add(file);
+        }
+    }
+
+    private async Task GuardarResultados()
+    {
+        if (_request == null) return;
+        _isSaving = true;
+
+        try
+        {
+            var techId = await LabService.GetLabTechIdByUserIdAsync(SessionService.CurrentUser!.UserID);
+
+            var labResult = new LabResult
+            {
+                RequestId = _request.RequestID,
+                PatientId = _request.PatientID,
+                TestName = _request.TestName,
+                LabTechId = techId,
+                Date = DateTime.UtcNow,
+                Results = new Dictionary<string, object>()
+            };
+
+            // A. Guardar parámetros de texto
+            foreach (var item in _resultadosDinamicos)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Key))
+                {
+                    labResult.Results[item.Key] = item.Value;
+                }
+            }
+
+            // B. Guardar archivos físicamente y registrar URL (NUEVO)
+            long maxFileSize = 1024 * 1024 * 10; // 10 MB límite
+            string uploadPath = Path.Combine(Environment.WebRootPath, "uploads");
+
+            // Crear carpeta si no existe
+            if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+            foreach (var file in _uploadedFiles)
+            {
+                // Generar nombre seguro: Guid + Extensión (ej: "a1b2... .pdf")
+                var safeFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
+                var filePath = Path.Combine(uploadPath, safeFileName);
+
+                // Guardar en disco
+                await using FileStream fs = new(filePath, FileMode.Create);
+                await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
+
+                // Agregar al diccionario de Mongo con la clave especial "Archivo_..."
+                // Usamos "Archivo" en el nombre para que el Dialog lo detecte como Link
+                labResult.Results[$"Archivo: {file.Name}"] = $"/uploads/{safeFileName}";
+            }
+
+            if (!string.IsNullOrWhiteSpace(_observaciones))
+            {
+                labResult.Results["Observaciones"] = _observaciones;
+            }
+
+            // C. Guardar todo
+            await LabService.CreateResultAsync(labResult);
+            await LabService.CompleteRequestAsync(_request.RequestID);
+
+            Snackbar.Add("Resultados y archivos enviados correctamente", Severity.Success);
+            Nav.NavigateTo("/panel-laboratorio");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    public class ResultItem
+    {
+        public string Key { get; set; } = "";
+        public string Value { get; set; } = "";
+    }
+}

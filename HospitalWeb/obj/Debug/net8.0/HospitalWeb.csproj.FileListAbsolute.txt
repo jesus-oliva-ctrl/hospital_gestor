@@ -159,3 +159,9 @@
 /mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
 /mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Microsoft.JSInterop.dll
 /mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/MudBlazor.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/DnsClient.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/MongoDB.Bson.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/MongoDB.Driver.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/SharpCompress.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/Snappier.dll
+/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/bin/Debug/net8.0/ZstdSharp.dll

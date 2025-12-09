@@ -36,6 +36,18 @@
                 <MudNavLink Href="mi-historial" Icon="@Icons.Material.Filled.Description">Expediente Clínico</MudNavLink>
             </MudNavGroup>
         }
+
+        @if (rol == "Laboratorista")
+        {
+            <MudNavGroup Title="Laboratorio" Icon="@Icons.Material.Filled.Biotech" Expanded="true">
+                <MudNavLink Href="panel-laboratorio" Icon="@Icons.Material.Filled.AssignmentTurnedIn">
+                    Solicitudes Pendientes
+                </MudNavLink>
+                <MudNavLink Href="historial-laboratorio" Icon="@Icons.Material.Filled.ManageSearch">
+                    Historial de Pruebas
+                </MudNavLink>
+            </MudNavGroup>
+        }
     }
     else
     {

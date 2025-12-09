@@ -23,5 +23,8 @@ namespace HospitalData.Services
         Task<DoctorProfileDto> GetDoctorProfileAsync(int userId);
         Task UpdateDoctorProfileAsync(DoctorProfileDto dto);
 
+        Task<List<LabTestDto>> GetAvailableLabTestsAsync();
+        Task CreateLabRequestAsync(int appointmentId, int testId);
+
     }
 }
