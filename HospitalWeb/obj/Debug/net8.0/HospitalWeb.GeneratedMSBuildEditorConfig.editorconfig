@@ -53,6 +53,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9HZXN0aW9uSW52ZW50YXJpby5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/GestionLaboratoristas.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9HZXN0aW9uTGFib3JhdG9yaXN0YXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/GestionPacientes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9HZXN0aW9uUGFjaWVudGVzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -63,6 +67,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/HistorialConsultas.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9IaXN0b3JpYWxDb25zdWx0YXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/HistorialLaboratorio.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9IaXN0b3JpYWxMYWJvcmF0b3Jpby5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/Home.razor]

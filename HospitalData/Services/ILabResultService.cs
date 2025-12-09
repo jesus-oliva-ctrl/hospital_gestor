@@ -14,5 +14,6 @@ namespace HospitalData.Services
         Task<LabRequestDto?> GetRequestByIdAsync(int requestId);
         Task CompleteRequestAsync(int requestId);
         Task<int> GetLabTechIdByUserIdAsync(int userId);
+        Task<List<LabResult>> GetAllRecentResultsAsync();
     }
 }

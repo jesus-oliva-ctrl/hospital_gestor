@@ -107,13 +107,11 @@
     private bool _isSaving = false;
     private string _observaciones = "";
     
-    // Lista para textos
     private List<ResultItem> _resultadosDinamicos = new List<ResultItem> 
     { 
         new ResultItem { Key = "Resultado General", Value = "" } 
     };
 
-    // Lista para archivos (NUEVO)
     private IList<IBrowserFile> _uploadedFiles = new List<IBrowserFile>();
 
     protected override async Task OnInitializedAsync()
@@ -136,7 +134,6 @@
     private void AgregarFila() => _resultadosDinamicos.Add(new ResultItem());
     private void RemoverFila(ResultItem item) => _resultadosDinamicos.Remove(item);
 
-    // Método que se ejecuta al seleccionar archivos
     private void UploadFiles(InputFileChangeEventArgs e)
     {
         foreach (var file in e.GetMultipleFiles())
@@ -158,13 +155,13 @@
             {
                 RequestId = _request.RequestID,
                 PatientId = _request.PatientID,
+                DoctorId = _request.DoctorID,
                 TestName = _request.TestName,
                 LabTechId = techId,
                 Date = DateTime.UtcNow,
                 Results = new Dictionary<string, object>()
             };
 
-            // A. Guardar parámetros de texto
             foreach (var item in _resultadosDinamicos)
             {
                 if (!string.IsNullOrWhiteSpace(item.Key))
@@ -173,25 +170,19 @@
                 }
             }
 
-            // B. Guardar archivos físicamente y registrar URL (NUEVO)
-            long maxFileSize = 1024 * 1024 * 10; // 10 MB límite
+            long maxFileSize = 1024 * 1024 * 10; 
             string uploadPath = Path.Combine(Environment.WebRootPath, "uploads");
 
-            // Crear carpeta si no existe
             if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
 
             foreach (var file in _uploadedFiles)
             {
-                // Generar nombre seguro: Guid + Extensión (ej: "a1b2... .pdf")
                 var safeFileName = $"{Guid.NewGuid()}{Path.GetExtension(file.Name)}";
                 var filePath = Path.Combine(uploadPath, safeFileName);
 
-                // Guardar en disco
                 await using FileStream fs = new(filePath, FileMode.Create);
                 await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
 
-                // Agregar al diccionario de Mongo con la clave especial "Archivo_..."
-                // Usamos "Archivo" en el nombre para que el Dialog lo detecte como Link
                 labResult.Results[$"Archivo: {file.Name}"] = $"/uploads/{safeFileName}";
             }
 
@@ -200,8 +191,7 @@
                 labResult.Results["Observaciones"] = _observaciones;
             }
 
-            // C. Guardar todo
-            await LabService.CreateResultAsync(labResult);
+                await LabService.CreateResultAsync(labResult);
             await LabService.CompleteRequestAsync(_request.RequestID);
 
             Snackbar.Add("Resultados y archivos enviados correctamente", Severity.Success);

@@ -1,12 +1,11 @@
-@page "/gestion-doctores"
-@using HospitalData.Models
-@using HospitalData.Services
+@page "/gestion-laboratoristas"
 @using HospitalData.DTOs
+@using HospitalData.Services
 @using HospitalWeb.Components.Shared
-@inject IStaffService StaffService
+@inject IAdminLabService AdminService
 @inject ISnackbar Snackbar
 
-<PageTitle>Gestión de Doctores</PageTitle>
+<PageTitle>Gestión de Laboratoristas</PageTitle>
 
 <Autorizacion RolRequerido="Administrativo">
 
@@ -15,11 +14,11 @@
         <MudStack Spacing="3">
             
             <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.MedicalServices" Color="Color.Primary" Size="Size.Large" />
+                <MudIcon Icon="@Icons.Material.Filled.Biotech" Color="Color.Primary" Size="Size.Large" />
                 <MudStack Spacing="0">
-                    <MudText Typo="Typo.h4">Directorio Médico</MudText>
+                    <MudText Typo="Typo.h4">Directorio de Laboratorio</MudText>
                     <MudText Typo="Typo.body2" Color="Color.Secondary">
-                        Gestión de médicos y especialistas del hospital
+                        Gestión de técnicos y personal de laboratorio
                     </MudText>
                 </MudStack>
             </MudStack>
@@ -28,42 +27,42 @@
 
             <MudTabs Elevation="4" Rounded="true" ApplyEffectsToContainer="true" Color="Color.Primary">
                 
-                <MudTabPanel Text="Lista de Doctores" Icon="@Icons.Material.Filled.List">
+                <MudTabPanel Text="Lista de Técnicos" Icon="@Icons.Material.Filled.List">
                     <MudPaper Elevation="0" Class="pa-4">
                         
                         @if (_isLoading)
                         {
                             <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
                                 <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-                                <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando directorio médico...</MudText>
+                                <MudText Typo="Typo.h6" Color="Color.Secondary">Cargando personal de laboratorio...</MudText>
                             </MudStack>
                         }
-                        else if (_listaDoctores == null || !_listaDoctores.Any())
+                        else if (_listaTecnicos == null || !_listaTecnicos.Any())
                         {
                             <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
-                                No hay doctores registrados en el sistema
+                                No hay laboratoristas registrados en el sistema
                             </MudAlert>
                         }
                         else
                         {
-                            <MudTable Items="@_listaDoctores" 
+                            <MudTable Items="@_listaTecnicos" 
                                       Dense="false" 
                                       Hover="true" 
                                       Bordered="false" 
                                       Striped="true" 
-                                      Filter="new Func<Doctor,bool>(FilterFunc1)"
+                                      Filter="new Func<LabTechnicianDto,bool>(FilterFunc1)"
                                       Elevation="0">
                                 <ToolBarContent>
                                     <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-grow-1">
                                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                             <MudIcon Icon="@Icons.Material.Filled.Badge" Color="Color.Primary" />
-                                            <MudText Typo="Typo.h6">Doctores Registrados</MudText>
+                                            <MudText Typo="Typo.h6">Técnicos Registrados</MudText>
                                             <MudChip T="string" Size="Size.Small" Color="Color.Primary">
-                                                @_listaDoctores.Count
+                                                @_listaTecnicos.Count
                                             </MudChip>
                                         </MudStack>
                                         <MudTextField @bind-Value="_searchString" 
-                                                      Placeholder="Buscar por nombre..." 
+                                                      Placeholder="Buscar por nombre o área..." 
                                                       Adornment="Adornment.Start" 
                                                       AdornmentIcon="@Icons.Material.Filled.Search" 
                                                       IconSize="Size.Medium"
@@ -74,19 +73,19 @@
                                 </ToolBarContent>
                                 <HeaderContent>
                                     <MudTh>ID</MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<Doctor, object>(x=>x.FirstName)">Nombre</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<Doctor, object>(x=>x.LastName)">Apellido</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<LabTechnicianDto, object>(x=>x.FirstName)">Nombre</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<LabTechnicianDto, object>(x=>x.LastName)">Apellido</MudTableSortLabel></MudTh>
                                     <MudTh>Teléfono</MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<Doctor, object>(x=>x.Specialty?.SpecialtyName ?? string.Empty)">Especialidad</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<LabTechnicianDto, object>(x=>x.AreaName)">Área Asignada</MudTableSortLabel></MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="ID">
-                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.DoctorId</MudChip>
+                                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.LabTechID</MudChip>
                                     </MudTd>
                                     <MudTd DataLabel="Nombre">
                                         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                             <MudAvatar Color="Color.Primary" Size="Size.Small">
-                                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                                                <MudIcon Icon="@Icons.Material.Filled.Science" Size="Size.Small" />
                                             </MudAvatar>
                                             <MudText Typo="Typo.body1">@context.FirstName</MudText>
                                         </MudStack>
@@ -107,17 +106,10 @@
                                             <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
                                         }
                                     </MudTd>
-                                    <MudTd DataLabel="Especialidad">
-                                        @if (context.Specialty != null)
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Icon="@Icons.Material.Filled.LocalHospital">
-                                                @context.Specialty.SpecialtyName
-                                            </MudChip>
-                                        }
-                                        else
-                                        {
-                                            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">Sin especialidad</MudChip>
-                                        }
+                                    <MudTd DataLabel="Área">
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.Workspaces">
+                                            @context.AreaName
+                                        </MudChip>
                                     </MudTd>
                                 </RowTemplate>
                                 <PagerContent>
@@ -135,45 +127,42 @@
                                 <CardHeaderContent>
                                     <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
                                         <MudIcon Icon="@Icons.Material.Filled.PersonAddAlt1" Color="Color.Primary" Size="Size.Medium" />
-                                        <MudText Typo="Typo.h6">Nuevo Médico</MudText>
+                                        <MudText Typo="Typo.h6">Nuevo Laboratorista</MudText>
                                     </MudStack>
                                 </CardHeaderContent>
                             </MudCardHeader>
                             <MudCardContent>
-                                <EditForm Model="_nuevoDoctor" OnValidSubmit="HandleCrearDoctor">
+                                <EditForm Model="_nuevoTecnico" OnValidSubmit="HandleCrearTecnico">
                                     <DataAnnotationsValidator />
                                     
                                     <MudGrid>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoDoctor.FirstName" 
+                                            <MudTextField @bind-Value="_nuevoTecnico.FirstName" 
                                                           Label="Nombres" 
                                                           Variant="Variant.Outlined"
                                                           Required="true"
-                                                          For="@(() => _nuevoDoctor.FirstName)"
                                                           Adornment="Adornment.Start"
                                                           AdornmentIcon="@Icons.Material.Filled.Person" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoDoctor.LastName" 
+                                            <MudTextField @bind-Value="_nuevoTecnico.LastName" 
                                                           Label="Apellidos" 
                                                           Variant="Variant.Outlined"
                                                           Required="true"
-                                                          For="@(() => _nuevoDoctor.LastName)"
                                                           Adornment="Adornment.Start"
                                                           AdornmentIcon="@Icons.Material.Filled.Person" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoDoctor.Email" 
+                                            <MudTextField @bind-Value="_nuevoTecnico.Email" 
                                                           Label="Email" 
                                                           Variant="Variant.Outlined"
                                                           InputType="InputType.Email" 
                                                           Required="true"
-                                                          For="@(() => _nuevoDoctor.Email)"
                                                           Adornment="Adornment.Start"
                                                           AdornmentIcon="@Icons.Material.Filled.Email" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoDoctor.Phone" 
+                                            <MudTextField @bind-Value="_nuevoTecnico.Phone" 
                                                           Label="Teléfono" 
                                                           Variant="Variant.Outlined"
                                                           Adornment="Adornment.Start"
@@ -182,19 +171,17 @@
                                         
                                         <MudItem xs="12">
                                             <MudSelect T="int" 
-                                                       Label="Especialidad Médica"
-                                                       @bind-Value="_nuevoDoctor.SpecialtyID"
+                                                       Label="Área de Laboratorio" 
+                                                       @bind-Value="_nuevoTecnico.AreaID"
                                                        Variant="Variant.Outlined"
                                                        AnchorOrigin="Origin.BottomCenter"
                                                        Adornment="Adornment.Start"
-                                                       AdornmentIcon="@Icons.Material.Filled.LocalHospital"
+                                                       AdornmentIcon="@Icons.Material.Filled.Category"
                                                        Required="true">
-                                                <MudSelectItem Value="0">-- Seleccione Especialidad --</MudSelectItem>
-                                                @foreach (var especialidad in _listaEspecialidades)
+                                                <MudSelectItem Value="0">-- Seleccione un Área --</MudSelectItem>
+                                                @foreach (var area in _listaAreas)
                                                 {
-                                                    <MudSelectItem Value="@especialidad.SpecialtyId">
-                                                        @especialidad.SpecialtyName
-                                                    </MudSelectItem>
+                                                    <MudSelectItem Value="@area.AreaID">@area.AreaName</MudSelectItem>
                                                 }
                                             </MudSelect>
                                         </MudItem>
@@ -208,14 +195,14 @@
                                                FullWidth="true"
                                                StartIcon="@Icons.Material.Filled.Save"
                                                ButtonType="ButtonType.Submit">
-                                        Registrar Doctor
+                                        Registrar Laboratorista
                                     </MudButton>
                                 </EditForm>
                             </MudCardContent>
                         </MudCard>
 
                         <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true" Icon="@Icons.Material.Filled.Info">
-                            Se creará automáticamente un usuario con contraseña por defecto para el nuevo doctor.
+                            Se creará automáticamente un usuario con contraseña por defecto para el nuevo técnico.
                         </MudAlert>
                     </MudPaper>
                 </MudTabPanel>
@@ -228,31 +215,56 @@
 </Autorizacion>
 
 @code {
-    private List<Doctor>? _listaDoctores;
+    private List<LabTechnicianDto>? _listaTecnicos;
+    private List<LabAreaDto> _listaAreas = new();
     
-    // Lista para el Dropdown
-    private List<SpecialtyDto> _listaEspecialidades = new();
+    private CreateTechModel _nuevoTecnico = new();
     
-    private CreateDoctorDto _nuevoDoctor = new();
     private string _searchString = "";
     private bool _isLoading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarDatosIniciales();
+        await CargarDatos();
     }
 
-    private async Task CargarDatosIniciales()
+    private async Task HandleCrearTecnico()
+    {
+        if (_nuevoTecnico.AreaID == 0)
+        {
+            Snackbar.Add("Debe seleccionar un área de laboratorio", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            await AdminService.CreateTechnicianAsync(
+                _nuevoTecnico.FirstName, 
+                _nuevoTecnico.LastName, 
+                _nuevoTecnico.Email, 
+                _nuevoTecnico.Phone, 
+                _nuevoTecnico.AreaID
+            );
+
+            Snackbar.Add("Laboratorista creado exitosamente", Severity.Success);
+            _nuevoTecnico = new(); 
+            await CargarDatos(); 
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task CargarDatos()
     {
         try
         {
             _isLoading = true;
-            
-            // 1. Cargar Doctores
-            _listaDoctores = await StaffService.ObtenerDoctoresAsync();
-            
-            // 2. Cargar Especialidades (Dropdown)
-            _listaEspecialidades = await StaffService.ObtenerEspecialidadesAsync();
+
+            _listaTecnicos = await AdminService.GetAllTechniciansAsync();
+
+            _listaAreas = await AdminService.GetAllAreasAsync();
         }
         catch (Exception ex)
         {
@@ -264,33 +276,10 @@
         }
     }
 
-    private async Task HandleCrearDoctor()
-    {
-        // Validación manual del select
-        if (_nuevoDoctor.SpecialtyID == 0)
-        {
-            Snackbar.Add("Debe seleccionar una especialidad.", Severity.Warning);
-            return;
-        }
 
-        try
-        {
-            await StaffService.CrearDoctorAsync(_nuevoDoctor);
-            Snackbar.Add("Doctor creado exitosamente", Severity.Success);
-            _nuevoDoctor = new(); // Limpiar formulario
-            
-            // Recargar solo la lista de doctores (no hace falta recargar especialidades)
-            _listaDoctores = await StaffService.ObtenerDoctoresAsync();
-        }
-        catch (Exception ex)
-        {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
-        }
-    }
+    private bool FilterFunc1(LabTechnicianDto element) => FilterFunc(element, _searchString);
 
-    private bool FilterFunc1(Doctor element) => FilterFunc(element, _searchString);
-
-    private bool FilterFunc(Doctor element, string searchString)
+    private bool FilterFunc(LabTechnicianDto element, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString)) 
             return true;
@@ -300,8 +289,17 @@
             return true;
         if ($"{element.FirstName} {element.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)) 
             return true;
-        if (element.Specialty?.SpecialtyName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+        if (element.AreaName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
             return true;
         return false;
+    }
+
+    public class CreateTechModel
+    {
+        public string FirstName { get; set; } = "";
+        public string LastName { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Phone { get; set; } = "";
+        public int AreaID { get; set; }
     }
 }

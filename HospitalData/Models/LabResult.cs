@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 namespace HospitalData.Models
 {
+    [BsonIgnoreExtraElements]
     public class LabResult
     {
         [BsonId]
@@ -16,6 +17,9 @@ namespace HospitalData.Models
 
         [BsonElement("PatientID")]
         public int PatientId { get; set; }
+        
+        [BsonElement("DoctorID")]
+        public int DoctorId { get; set; }
 
         [BsonElement("Date")]
         public DateTime Date { get; set; } = DateTime.UtcNow;

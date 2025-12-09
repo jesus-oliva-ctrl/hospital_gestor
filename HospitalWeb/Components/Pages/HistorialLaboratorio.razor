@@ -1,0 +1,164 @@
+@page "/historial-laboratorio"
+@using HospitalData.Models
+@using HospitalData.Services
+@using HospitalWeb.Components.Shared
+@using MudBlazor
+@inject ILabResultService LabService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject HospitalDbContext SqlContext 
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Historial de Laboratorio</PageTitle>
+
+<Autorizacion RolRequerido="Laboratorista">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+        
+        <MudText Typo="Typo.h4" Class="mb-4">📂 Historial de Pruebas Realizadas</MudText>
+
+        <MudTextField @bind-Value="_searchString" 
+                      Placeholder="Buscar por nombre de examen..." 
+                      Adornment="Adornment.Start" 
+                      AdornmentIcon="@Icons.Material.Filled.Search" 
+                      IconSize="Size.Medium" 
+                      Class="mt-0 mb-4" />
+
+        @if (_isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+        }
+        else if (_results == null || !_results.Any())
+        {
+            <MudAlert Severity="Severity.Info">No hay resultados registrados en el sistema.</MudAlert>
+        }
+        else
+        {
+            <MudTable Items="@FiltrarResultados()" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="3" Dense="true">
+                <HeaderContent>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Paciente</MudTh>
+                    <MudTh>Examen</MudTh>
+                    <MudTh>Doctor Solicitante</MudTh> <MudTh>Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Fecha">@context.Date.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</MudTd>
+                    
+                    <MudTd DataLabel="Paciente">
+                        @ObtenerNombrePaciente(context.PatientId)
+                    </MudTd>
+                    
+                    <MudTd DataLabel="Examen">
+                        <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text">
+                            @context.TestName
+                        </MudChip>
+                    </MudTd>
+
+                    <MudTd DataLabel="Doctor">
+                        <MudText Typo="Typo.body2" Color="Color.Primary">
+                            @ObtenerNombreDoctor(context.DoctorId)
+                        </MudText>
+                    </MudTd>
+                    
+                    <MudTd DataLabel="Acciones">
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Primary" 
+                                   Size="Size.Small"
+                                   StartIcon="@Icons.Material.Filled.Visibility"
+                                   OnClick="@(() => VerDetalles(context))">
+                            Ver Resultado
+                        </MudButton>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudContainer>
+</Autorizacion>
+
+@code {
+    private List<LabResult> _results = new();
+    
+    private Dictionary<int, string> _nombresPacientes = new();
+    private Dictionary<int, string> _nombresDoctores = new(); 
+
+    private bool _isLoading = true;
+    private string _searchString = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        try
+        {
+            _isLoading = true;
+            
+            _results = await LabService.GetAllRecentResultsAsync();
+
+            if (_results.Any())
+            {
+                var patientIds = _results.Select(r => r.PatientId).Distinct().ToList();
+                if (patientIds.Any())
+                {
+                    var pacientes = await SqlContext.Patients
+                        .Where(p => patientIds.Contains(p.PatientId))
+                        .Select(p => new { p.PatientId, FullName = p.FirstName + " " + p.LastName })
+                        .ToListAsync();
+
+                    _nombresPacientes = pacientes.ToDictionary(k => k.PatientId, v => v.FullName);
+                }
+
+                var doctorIds = _results.Select(r => r.DoctorId).Distinct().ToList();
+                if (doctorIds.Any())
+                {
+                    var doctores = await SqlContext.Doctors
+                        .Where(d => doctorIds.Contains(d.DoctorId))
+                        .Select(d => new { d.DoctorId, FullName = "Dr. " + d.FirstName + " " + d.LastName })
+                        .ToListAsync();
+
+                    _nombresDoctores = doctores.ToDictionary(k => k.DoctorId, v => v.FullName);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error cargando historial: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private string ObtenerNombrePaciente(int id)
+    {
+        return _nombresPacientes.ContainsKey(id) ? _nombresPacientes[id] : $"ID Paciente: {id}";
+    }
+
+    private string ObtenerNombreDoctor(int id)
+    {
+        if (id == 0) return "---"; 
+        return _nombresDoctores.ContainsKey(id) ? _nombresDoctores[id] : $"ID Doctor: {id}";
+    }
+
+    private IEnumerable<LabResult> FiltrarResultados()
+    {
+        if (string.IsNullOrWhiteSpace(_searchString))
+            return _results;
+
+        return _results.Where(x => x.TestName.Contains(_searchString, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void VerDetalles(LabResult result)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("Result", result);
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+        DialogService.Show<LabResultDialog>("Detalle de Resultados", parameters, options);
+    }
+}

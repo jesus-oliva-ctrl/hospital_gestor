@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "U6M71fDn+lk4A0Xpy6TCy2yZA2aMR4PCj+R1i2JULfQ=",
+  "Hash": "JFL4YjlwPybhKxen+zsqz0nm9CgmDSvjOLqUUNQkd8M=",
   "Source": "HospitalWeb",
   "BasePath": "_content/HospitalWeb",
   "Mode": "Default",
@@ -167,6 +167,44 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot/favicon.png"
+    },
+    {
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/uploads/8beaf9d8-8e54-456a-9fef-20f84476039b.jpeg",
+      "SourceId": "HospitalWeb",
+      "SourceType": "Discovered",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
+      "BasePath": "_content/HospitalWeb",
+      "RelativePath": "uploads/8beaf9d8-8e54-456a-9fef-20f84476039b.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/8beaf9d8-8e54-456a-9fef-20f84476039b.jpeg"
+    },
+    {
+      "Identity": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/uploads/e24abdb9-5614-45bf-a77e-694efff61ffa.jpeg",
+      "SourceId": "HospitalWeb",
+      "SourceType": "Discovered",
+      "ContentRoot": "/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/wwwroot/",
+      "BasePath": "_content/HospitalWeb",
+      "RelativePath": "uploads/e24abdb9-5614-45bf-a77e-694efff61ffa.jpeg",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/uploads/e24abdb9-5614-45bf-a77e-694efff61ffa.jpeg"
     }
   ]
 }

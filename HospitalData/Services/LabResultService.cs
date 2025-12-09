@@ -130,5 +130,12 @@ namespace HospitalData.Services
             return result;
             return result;
         }
+        public async Task<List<LabResult>> GetAllRecentResultsAsync()
+        {
+            return await _collection.Find(_ => true)
+                                    .SortByDescending(x => x.Date)
+                                    .Limit(100)
+                                    .ToListAsync();
+        }
     }
 }

@@ -24,6 +24,17 @@ namespace HospitalData.Services
                                  .ToListAsync();
         }
 
+        public async Task<List<SpecialtyDto>> ObtenerEspecialidadesAsync()
+        {
+            return await _context.Specialties
+                .Select(s => new SpecialtyDto 
+                { 
+                    SpecialtyId = s.SpecialtyId, 
+                    SpecialtyName = s.SpecialtyName 
+                })
+                .ToListAsync();
+        }
+
         public async Task CrearDoctorAsync(CreateDoctorDto nuevoDoctor)
         {
             await _context.Database.ExecuteSqlInterpolatedAsync($@"
