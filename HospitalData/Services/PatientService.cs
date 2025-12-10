@@ -109,7 +109,25 @@ namespace HospitalData.Services
         }
         public async Task UpdatePatientProfileAsync(PatientProfileDto dto)
         {
-            await _userAccountService.UpdateUserProfileAsync(dto, dto.Address);
+            var userProfile = new UserProfileDto
+                {
+                    UserID = dto.UserID,
+                    Username = dto.Username,
+                    Email = dto.Email,
+                    FirstName = dto.FirstName,
+                    LastName = dto.LastName,
+                    Phone = dto.Phone,                    
+                    Address = dto.Address, 
+                    NewPassword = dto.NewPassword,
+                    ConfirmPassword = dto.NewPassword
+                };
+            if (string.IsNullOrEmpty(dto.NewPassword))
+            {
+                userProfile.NewPassword = null;
+                userProfile.ConfirmPassword = null;
+            }
+
+            await _userAccountService.UpdateUserProfileAsync(userProfile);        
         }
     }
 }

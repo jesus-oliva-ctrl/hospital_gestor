@@ -128,7 +128,6 @@ namespace HospitalData.Services
                 .FirstOrDefaultAsync();
             
             return result;
-            return result;
         }
         public async Task<List<LabResult>> GetAllRecentResultsAsync()
         {

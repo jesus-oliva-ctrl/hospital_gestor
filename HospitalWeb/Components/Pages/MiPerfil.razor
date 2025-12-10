@@ -1,101 +1,153 @@
+@page "/mi-perfil"
 @using HospitalData.DTOs
 @using HospitalData.Services
-@inject IPatientService PatientService
+@inject IUserAccountService AccountService
+@inject UserSessionService SessionService
 @inject ISnackbar Snackbar
+@inject NavigationManager Nav
 
-<MudCard Elevation="3">
-    <MudCardHeader>
-        <CardHeaderContent>
-            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                <MudIcon Icon="@Icons.Material.Filled.Description" Color="Color.Primary" Size="Size.Medium" />
-                <MudText Typo="Typo.h6">Historial Clínico del Paciente</MudText>
-            </MudStack>
-        </CardHeaderContent>
-    </MudCardHeader>
+<PageTitle>Mi Perfil</PageTitle>
 
-    <MudCardContent>
-        @if (_isLoading)
-        {
-            <MudStack AlignItems="AlignItems.Center" Spacing="2" Class="pa-4">
-                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-                <MudText Typo="Typo.body2" Color="Color.Secondary">Cargando historial...</MudText>
-            </MudStack>
-        }
-        else if (_historial == null || !_historial.Any())
-        {
-            <MudAlert Severity="Severity.Info" Dense="true" Icon="@Icons.Material.Filled.Info">
-                Este paciente no tiene registros médicos previos
-            </MudAlert>
-        }
-        else
-        {
-            <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
-                @foreach (var registro in _historial)
-                {
-                    <MudTimelineItem Color="Color.Primary" Size="Size.Small">
-                        <ItemOpposite>
-                            <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                @registro.VisitDate.ToString("dd MMM yyyy")
-                            </MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                @registro.VisitDate.ToString("HH:mm")
-                            </MudText>
-                        </ItemOpposite>
-                        <ItemContent>
-                            <MudPaper Elevation="2" Class="pa-3 mb-2">
-                                <MudStack Spacing="2">
-                                    <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Start">
-                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.MedicalServices">
-                                            Consulta Médica
-                                        </MudChip>
-                                    </MudStack>
-                                    
-                                    <MudText Typo="Typo.body1">
-                                        @registro.Description
-                                    </MudText>
-                                    
-                                    <MudDivider />
-                                    
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                        <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Color="Color.Secondary" />
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            Atendido por médico tratante
-                                        </MudText>
-                                    </MudStack>
-                                </MudStack>
-                            </MudPaper>
-                        </ItemContent>
-                    </MudTimelineItem>
-                }
-            </MudTimeline>
-        }
-    </MudCardContent>
-</MudCard>
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    
+    <MudText Typo="Typo.h4" Class="mb-4">👤 Mi Perfil</MudText>
+
+    @if (_isLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Editar Información Personal</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Rol: <strong>@_profile.Role</strong>
+                    </MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            
+            <MudCardContent>
+                <EditForm Model="_profile" OnValidSubmit="HandleUpdate">
+                    <DataAnnotationsValidator />
+
+                    <MudTabs Elevation="0" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-4">
+                        
+                        <MudTabPanel Text="Datos Básicos" Icon="@Icons.Material.Filled.Person">
+                            <MudGrid>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_profile.FirstName" Label="Nombre" Variant="Variant.Outlined" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_profile.LastName" Label="Apellido" Variant="Variant.Outlined" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_profile.Email" Label="Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_profile.Phone" Label="Teléfono" Variant="Variant.Outlined" />
+                                </MudItem>
+                                
+                                @if (_profile.Role == "Paciente")
+                                {
+                                    <MudItem xs="12">
+                                        <MudTextField @bind-Value="_profile.Address" Label="Dirección Domiciliaria" Variant="Variant.Outlined" Lines="2" />
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudTabPanel>
+
+                        <MudTabPanel Text="Seguridad y Acceso" Icon="@Icons.Material.Filled.Security">
+                            <MudAlert Severity="Severity.Info" Class="mb-4" Dense="true">
+                                Deje los campos de contraseña en blanco si no desea cambiarla.
+                            </MudAlert>
+
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudTextField @bind-Value="_profile.Username" Label="Nombre de Usuario" Variant="Variant.Outlined" Required="true" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_profile.NewPassword" 
+                                                  Label="Nueva Contraseña" 
+                                                  Variant="Variant.Outlined" 
+                                                  InputType="InputType.Password" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_profile.ConfirmPassword" 
+                                                  Label="Confirmar Contraseña" 
+                                                  Variant="Variant.Outlined" 
+                                                  InputType="InputType.Password"
+                                                  For="@(() => _profile.ConfirmPassword)" />
+                                </MudItem>
+                            </MudGrid>
+                        </MudTabPanel>
+                    
+                    </MudTabs>
+
+                    <MudDivider Class="my-4" />
+
+                    <MudButton ButtonType="ButtonType.Submit" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large"
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Save">
+                        Guardar Cambios
+                    </MudButton>
+
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
 
 @code {
-    [Parameter]
-    public int PatientId { get; set; }
+    private UserProfileDto _profile = new();
+    private bool _isLoading = true;
 
-    private List<MedicalHistoryDto>? _historial;
-    private bool _isLoading = false;
-
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (PatientId > 0)
+        var currentUser = SessionService.CurrentUser;
+        if (currentUser != null)
         {
-            _isLoading = true;
-            try
+            try 
             {
-                _historial = await PatientService.GetMyMedicalHistoryAsync(PatientId);
+                _profile = await AccountService.GetUserProfileAsync(currentUser.UserID);
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Error al cargar historial: {ex.Message}", Severity.Error);
+                Snackbar.Add("Error al cargar perfil: " + ex.Message, Severity.Error);
             }
             finally
             {
                 _isLoading = false;
             }
+        }
+        else
+        {
+            Nav.NavigateTo("/login");
+        }
+    }
+
+    private async Task HandleUpdate()
+    {
+        try
+        {
+            await AccountService.UpdateUserProfileAsync(_profile);
+            
+            Snackbar.Add("Perfil actualizado correctamente.", Severity.Success);
+            
+            if (!string.IsNullOrEmpty(_profile.NewPassword))
+            {
+                Snackbar.Add("Contraseña cambiada. Por favor inicie sesión nuevamente.", Severity.Warning);
+                await Task.Delay(2000);
+                Nav.NavigateTo("/logout"); 
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar: {ex.Message}", Severity.Error);
         }
     }
 }

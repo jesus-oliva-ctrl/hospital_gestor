@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 namespace HospitalData.Services
 {
     public interface IUserAccountService
-    {
-        Task UpdateUserProfileAsync(UserProfileBaseDto dto, string? address = null);
+    {    
+        Task<UserProfileDto> GetUserProfileAsync(int userId);
+        Task UpdateUserProfileAsync(UserProfileDto profile);
     }
 }

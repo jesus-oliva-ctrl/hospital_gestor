@@ -181,8 +181,27 @@ namespace HospitalData.Services
         }
         public async Task UpdateDoctorProfileAsync(DoctorProfileDto dto)
         {
-            await _userAccountService.UpdateUserProfileAsync(dto);
-        }
+            var userProfile = new UserProfileDto
+            {
+                UserID = dto.UserID, 
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                Email = dto.Email,
+                Phone = dto.Phone,
+                Username = dto.Username,
+                Address = null, 
+                NewPassword = dto.NewPassword, 
+                ConfirmPassword = dto.NewPassword
+            };
+
+            if(string.IsNullOrEmpty(dto.NewPassword))
+            {
+                userProfile.NewPassword = null;
+                userProfile.ConfirmPassword = null;
+            }
+
+            await _userAccountService.UpdateUserProfileAsync(userProfile);        
+         }
 
         public async Task<List<LabTestDto>> GetAvailableLabTestsAsync()
         {
