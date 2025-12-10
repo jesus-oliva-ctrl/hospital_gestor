@@ -3,7 +3,7 @@
 @using HospitalData.Services
 @using HospitalData.DTOs
 @using HospitalWeb.Components.Shared
-@inject IStaffService StaffService
+@inject IAdminDoctorService DoctorService
 @inject ISnackbar Snackbar
 
 <PageTitle>Gestión de Doctores</PageTitle>
@@ -248,11 +248,9 @@
         {
             _isLoading = true;
             
-            // 1. Cargar Doctores
-            _listaDoctores = await StaffService.ObtenerDoctoresAsync();
+            _listaDoctores = await DoctorService.GetAllDoctorsAsync();
             
-            // 2. Cargar Especialidades (Dropdown)
-            _listaEspecialidades = await StaffService.ObtenerEspecialidadesAsync();
+            _listaEspecialidades = await DoctorService.GetSpecialtiesAsync();
         }
         catch (Exception ex)
         {
@@ -266,7 +264,6 @@
 
     private async Task HandleCrearDoctor()
     {
-        // Validación manual del select
         if (_nuevoDoctor.SpecialtyID == 0)
         {
             Snackbar.Add("Debe seleccionar una especialidad.", Severity.Warning);
@@ -275,12 +272,12 @@
 
         try
         {
-            await StaffService.CrearDoctorAsync(_nuevoDoctor);
-            Snackbar.Add("Doctor creado exitosamente", Severity.Success);
-            _nuevoDoctor = new(); // Limpiar formulario
+            await DoctorService.CreateDoctorAsync(_nuevoDoctor);
             
-            // Recargar solo la lista de doctores (no hace falta recargar especialidades)
-            _listaDoctores = await StaffService.ObtenerDoctoresAsync();
+            Snackbar.Add("Doctor creado exitosamente", Severity.Success);
+            _nuevoDoctor = new(); 
+            
+            _listaDoctores = await DoctorService.GetAllDoctorsAsync();
         }
         catch (Exception ex)
         {

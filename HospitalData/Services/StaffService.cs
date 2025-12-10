@@ -5,66 +5,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HospitalData.Factories;
 
 namespace HospitalData.Services
 {
     public class StaffService : IStaffService
     {
         private readonly HospitalDbContext _context;
+        private readonly IUserEntityFactory _userFactory;
 
         public StaffService(HospitalDbContext context)
         {
             _context = context;
         }
-
-        public async Task<List<Doctor>> ObtenerDoctoresAsync()
-        {
-            return await _context.Doctors
-                                 .Include(d => d.Specialty)
-                                 .ToListAsync();
-        }
-
-        public async Task<List<SpecialtyDto>> ObtenerEspecialidadesAsync()
-        {
-            return await _context.Specialties
-                .Select(s => new SpecialtyDto 
-                { 
-                    SpecialtyId = s.SpecialtyId, 
-                    SpecialtyName = s.SpecialtyName 
-                })
-                .ToListAsync();
-        }
-
-        public async Task CrearDoctorAsync(CreateDoctorDto nuevoDoctor)
-        {
-            await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                EXEC SP_CreateNewEntity
-                    @FirstName = {nuevoDoctor.FirstName},
-                    @LastName = {nuevoDoctor.LastName},
-                    @Email = {nuevoDoctor.Email},
-                    @Phone = {nuevoDoctor.Phone},
-                    @EntityType = 'Medico',
-                    @SpecialtyID = {nuevoDoctor.SpecialtyID}
-            ");
-        }
-
-        public async Task<List<Patient>> ObtenerPacientesAsync()
-        {
-            return await _context.Patients.ToListAsync();
-        }
-
-        public async Task CrearPacienteAsync(CreatePatientDto nuevoPaciente)
-        {
-            await _context.Database.ExecuteSqlInterpolatedAsync($@"
-                EXEC SP_CreateNewEntity
-                    @FirstName = {nuevoPaciente.FirstName},
-                    @LastName = {nuevoPaciente.LastName},
-                    @Email = {nuevoPaciente.Email},
-                    @Phone = {nuevoPaciente.Phone},
-                    @EntityType = 'Paciente'
-            ");
-        }
-
 
         public async Task<List<InventoryDto>> ObtenerInventarioAsync()
         {

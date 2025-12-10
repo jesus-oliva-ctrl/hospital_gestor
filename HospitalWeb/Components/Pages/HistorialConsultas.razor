@@ -2,8 +2,9 @@
 @using HospitalData.DTOs
 @using HospitalData.Services
 @using HospitalData.Models
+@using HospitalWeb.Components.Shared
 @inject IDoctorService DoctorService
-@inject IStaffService StaffService
+@inject IAdminDoctorService AdminDoctorService 
 @inject UserSessionService SessionService
 @inject ISnackbar Snackbar
 
@@ -11,7 +12,7 @@
 
 <Autorizacion RolRequerido="Medico">
 
-    <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
         
         <MudStack Spacing="3">
             
@@ -72,6 +73,7 @@
                               Hover="true" 
                               Breakpoint="Breakpoint.Sm"
                               Dense="false"
+                              Striped="true"
                               Elevation="0">
                         <HeaderContent>
                             <MudTh><MudTableSortLabel SortBy="new Func<MedicalHistoryDto, object>(x => x.VisitDate)">
@@ -134,14 +136,14 @@
 
 @if (_showFollowUpDialog)
 {
-    <MudOverlay Visible="true" DarkBackground="true" OnClick="CloseFollowUpDialog" />
-    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1400; width: 90%; max-width: 600px;">
+    <MudOverlay Visible="true" DarkBackground="true" OnClick="CloseFollowUpDialog" ZIndex="1300" />
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1400; width: 90%; max-width: 500px;">
         <MudPaper Elevation="8" Class="pa-6">
             <MudStack Spacing="3">
                 <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                     <MudText Typo="Typo.h6">
                         <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Color="Color.Primary" Class="mr-2" />
-                        Agendar Cita de Seguimiento
+                        Agendar Seguimiento
                     </MudText>
                     <MudIconButton Icon="@Icons.Material.Filled.Close" 
                                   Color="Color.Default" 
@@ -152,35 +154,42 @@
 
                 @if (_selectedHistoryRecord != null)
                 {
-                    <MudAlert Severity="Severity.Info" Dense="true">
-                        <MudStack Spacing="1">
-                            <MudText Typo="Typo.body2">
-                                <strong>Paciente:</strong> @_selectedHistoryRecord.PatientFirstName @_selectedHistoryRecord.PatientLastName
-                            </MudText>
-                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                Consulta anterior: @_selectedHistoryRecord.VisitDate.ToString("dd/MM/yyyy")
-                            </MudText>
-                        </MudStack>
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="my-2">
+                        <MudText Typo="Typo.body2">
+                            <strong>Paciente:</strong> @_selectedHistoryRecord.PatientFirstName @_selectedHistoryRecord.PatientLastName
+                        </MudText>
+                        <MudText Typo="Typo.caption">
+                            Consulta anterior: @_selectedHistoryRecord.VisitDate.ToString("dd/MM/yyyy")
+                        </MudText>
                     </MudAlert>
 
-                    <MudDatePicker @bind-Date="_newFollowUpDate"
-                                 Label="Fecha del Seguimiento"
+                    <MudGrid>
+                        <MudItem xs="12" sm="6">
+                             <MudDatePicker @bind-Date="_newFollowUpDate"
+                                 Label="Fecha"
                                  Variant="Variant.Outlined"
                                  MinDate="DateTime.Today"
                                  Required="true"
-                                 DateFormat="dd/MM/yyyy" />
-
-                    <MudTimePicker @bind-Time="_newFollowUpTime"
-                                 Label="Hora del Seguimiento"
+                                 DateFormat="dd/MM/yyyy" 
+                                 Adornment="Adornment.Start" 
+                                 AdornmentIcon="@Icons.Material.Filled.Event" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTimePicker @bind-Time="_newFollowUpTime"
+                                 Label="Hora"
                                  Variant="Variant.Outlined"
                                  Required="true"
-                                 AmPm="true" />
+                                 AmPm="true" 
+                                 Adornment="Adornment.Start" 
+                                 AdornmentIcon="@Icons.Material.Filled.AccessTime" />
+                        </MudItem>
+                    </MudGrid>
 
-                    <MudDivider />
+                    <MudDivider Class="mt-2" />
 
                     <MudStack Row="true" Spacing="2" Justify="Justify.FlexEnd">
                         <MudButton Variant="Variant.Text" 
-                                  Color="Color.Default"
+                                  Color="Color.Secondary"
                                   OnClick="CloseFollowUpDialog"
                                   Disabled="_isSubmitting">
                             Cancelar
@@ -197,7 +206,7 @@
                             }
                             else
                             {
-                                <MudText>Agendar Cita</MudText>
+                                <MudText>Confirmar Cita</MudText>
                             }
                         </MudButton>
                     </MudStack>
@@ -211,9 +220,11 @@
 {
     private List<MedicalHistoryDto>? _historial;
     private bool _isLoading = true;
+    
     private bool _showFollowUpDialog = false;
     private bool _isSubmitting = false;
     private MedicalHistoryDto? _selectedHistoryRecord;
+    
     private DateTime? _newFollowUpDate = DateTime.Now.AddDays(7);
     private TimeSpan? _newFollowUpTime = new TimeSpan(9, 0, 0);
 
@@ -237,7 +248,7 @@
                 return;
             }
             
-            int doctorUserId = SessionService.CurrentUser.UserID;
+            int doctorUserId = SessionService.CurrentUser.UserID; 
             _historial = await DoctorService.GetMyMedicalHistoryAsync(doctorUserId);
         }
         catch (Exception ex)
@@ -267,25 +278,15 @@
 
     private async Task HandleScheduleFollowUp()
     {
-        if (_isSubmitting)
-        {
-            return;
-        }
+        if (_isSubmitting) return;
 
         _isSubmitting = true;
 
         try
         {
-            // Validaciones
-            if (_selectedHistoryRecord == null)
+            if (_selectedHistoryRecord == null || SessionService.CurrentUser == null)
             {
-                Snackbar.Add("Error: No hay registro seleccionado", Severity.Error);
-                return;
-            }
-            
-            if (SessionService.CurrentUser == null)
-            {
-                Snackbar.Add("Error: Usuario no autenticado", Severity.Error);
+                Snackbar.Add("Error de validación", Severity.Error);
                 return;
             }
 
@@ -295,17 +296,15 @@
                 return;
             }
 
-            // Obtener el doctor actual
-            var doctores = await StaffService.ObtenerDoctoresAsync();
+            var doctores = await AdminDoctorService.GetAllDoctorsAsync();
             var miDoctor = doctores.FirstOrDefault(d => d.UserId == SessionService.CurrentUser.UserID);
 
             if (miDoctor == null)
             {
-                Snackbar.Add("Error: No se encontró el perfil del médico asociado.", Severity.Error);
+                Snackbar.Add("Error: No se encontró tu perfil de médico.", Severity.Error);
                 return;
             }
 
-            // Crear el DTO para la nueva cita
             var newAppointmentDto = new ScheduleAppointmentDto
             {
                 PatientID = _selectedHistoryRecord.PatientID,
@@ -313,13 +312,11 @@
                 AppointmentDate = _newFollowUpDate.Value.Date.Add(_newFollowUpTime.Value)
             };
 
-            // Agendar la cita
             await DoctorService.ScheduleNewAppointmentAsync(newAppointmentDto);
             
             Snackbar.Add("Cita de seguimiento agendada exitosamente", Severity.Success);
             CloseFollowUpDialog();
             
-            // Recargar historial
             await LoadHistorial();
         }
         catch (Exception ex)

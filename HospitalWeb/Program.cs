@@ -37,6 +37,10 @@ builder.Services.AddScoped<ILabResultService, LabResultService>();
 
 builder.Services.AddScoped<IAdminLabService, AdminLabService>();
 
+builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
+
+builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
+
 
 //Modulo de Servicios Transversales
 builder.Services.AddScoped<IAppointmentManagementService, AppointmentManagementService>();
@@ -44,6 +48,8 @@ builder.Services.AddScoped<IAppointmentManagementService, AppointmentManagementS
 builder.Services.AddScoped<IPrescriptionManagementService, PrescriptionManagementService>();
 
 builder.Services.AddScoped<IUserAccountService, UserAccountService>();
+
+builder.Services.AddScoped<HospitalData.Factories.IUserEntityFactory, HospitalData.Factories.UserEntityFactory>();
 
 var app = builder.Build();
 
