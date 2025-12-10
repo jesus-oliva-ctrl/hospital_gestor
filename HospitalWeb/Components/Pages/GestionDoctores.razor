@@ -3,7 +3,9 @@
 @using HospitalData.Services
 @using HospitalData.DTOs
 @using HospitalWeb.Components.Shared
+@using MediatR
 @inject IAdminDoctorService DoctorService
+@inject IMediator Mediator
 @inject ISnackbar Snackbar
 
 <PageTitle>Gestión de Doctores</PageTitle>
@@ -229,8 +231,7 @@
 
 @code {
     private List<Doctor>? _listaDoctores;
-    
-    // Lista para el Dropdown
+        
     private List<SpecialtyDto> _listaEspecialidades = new();
     
     private CreateDoctorDto _nuevoDoctor = new();

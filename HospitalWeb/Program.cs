@@ -53,6 +53,8 @@ builder.Services.AddScoped<HospitalData.Factories.IUserEntityFactory, HospitalDa
 
 builder.Services.AddTransient<HospitalData.Builders.ILabResultBuilder, HospitalData.Builders.LabResultBuilder>();
 
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
 var app = builder.Build();
 
 
