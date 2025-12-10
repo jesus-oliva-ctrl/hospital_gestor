@@ -2,6 +2,7 @@
 @using HospitalData.DTOs
 @using HospitalData.Models
 @using HospitalData.Services
+@using HospitalData.Builders
 @using Microsoft.AspNetCore.Hosting
 @using System.IO
 @inject ILabResultService LabService
@@ -9,6 +10,7 @@
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
 @inject IWebHostEnvironment Environment 
+@inject ILabResultBuilder LabResultBuilder
 
 <PageTitle>Procesar Examen</PageTitle>
 

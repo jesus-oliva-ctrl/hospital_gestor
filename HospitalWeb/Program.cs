@@ -51,6 +51,8 @@ builder.Services.AddScoped<IUserAccountService, UserAccountService>();
 
 builder.Services.AddScoped<HospitalData.Factories.IUserEntityFactory, HospitalData.Factories.UserEntityFactory>();
 
+builder.Services.AddTransient<HospitalData.Builders.ILabResultBuilder, HospitalData.Builders.LabResultBuilder>();
+
 var app = builder.Build();
 
 
