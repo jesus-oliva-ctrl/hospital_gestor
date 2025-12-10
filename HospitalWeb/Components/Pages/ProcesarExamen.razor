@@ -153,23 +153,19 @@
         {
             var techId = await LabService.GetLabTechIdByUserIdAsync(SessionService.CurrentUser!.UserID);
 
-            var labResult = new LabResult
-            {
-                RequestId = _request.RequestID,
-                PatientId = _request.PatientID,
-                DoctorId = _request.DoctorID,
-                TestName = _request.TestName,
-                LabTechId = techId,
-                Date = DateTime.UtcNow,
-                Results = new Dictionary<string, object>()
-            };
+
+            LabResultBuilder.Reset();
+            LabResultBuilder.SetBasicInfo(
+                _request.RequestID,
+                _request.PatientID,
+                _request.DoctorID,
+                techId,
+                _request.TestName
+            );
 
             foreach (var item in _resultadosDinamicos)
             {
-                if (!string.IsNullOrWhiteSpace(item.Key))
-                {
-                    labResult.Results[item.Key] = item.Value;
-                }
+                LabResultBuilder.AddParameter(item.Key, item.Value);
             }
 
             long maxFileSize = 1024 * 1024 * 10; 
@@ -185,15 +181,14 @@
                 await using FileStream fs = new(filePath, FileMode.Create);
                 await file.OpenReadStream(maxFileSize).CopyToAsync(fs);
 
-                labResult.Results[$"Archivo: {file.Name}"] = $"/uploads/{safeFileName}";
+                LabResultBuilder.AddAttachment(file.Name, $"/uploads/{safeFileName}");
             }
 
-            if (!string.IsNullOrWhiteSpace(_observaciones))
-            {
-                labResult.Results["Observaciones"] = _observaciones;
-            }
+            LabResultBuilder.AddObservations(_observaciones);
 
-                await LabService.CreateResultAsync(labResult);
+            var labResult = LabResultBuilder.Build();
+
+            await LabService.CreateResultAsync(labResult);
             await LabService.CompleteRequestAsync(_request.RequestID);
 
             Snackbar.Add("Resultados y archivos enviados correctamente", Severity.Success);

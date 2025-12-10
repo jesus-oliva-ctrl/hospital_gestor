@@ -6,7 +6,7 @@ namespace HospitalData.Builders
 {
     public class LabResultBuilder : ILabResultBuilder
     {
-        private LabResult _labResult;
+        private LabResult _labResult = null!;
 
         public LabResultBuilder()
         {

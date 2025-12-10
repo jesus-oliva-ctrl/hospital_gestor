@@ -4,37 +4,87 @@
 @inject UserSessionService SessionService 
 @inject NavigationManager NavigationManager
 
-
 <PageTitle>Login</PageTitle>
 
-<h3>Iniciar Sesión</h3>
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="height: 100vh;">
+    
+    <MudCard Elevation="4" Class="pa-4" Style="width: 100%; max-width: 400px; border-radius: 8px;">
+        
+        <MudCardHeader Class="d-flex flex-column align-center">
+            <CardHeaderContent>
+                <div class="d-flex justify-center mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Color="Color.Primary" Size="Size.Large" Style="font-size: 3rem;" />
+                </div>
+                <MudText Typo="Typo.h5" Align="Align.Center" Class="mt-2"><b>Iniciar Sesión</b></MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
 
-<div class="card" style="width: 24rem;">
-    <div class="card-body">
-        <div class="form-group mb-3">
-            <label for="username">Usuario:</label>
-            <input id="username" class="form-control" @bind="_username" />
-        </div>
-        <div class="form-group mb-3">
-            <label for="password">Contraseña:</label>
-            <input id="password" type="password" class="form-control" @bind="_password" />
-        </div>
+        <MudCardContent>
+            
+            <MudTextField @bind-Value="_username" 
+                          Label="Usuario" 
+                          Variant="Variant.Outlined" 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Person"
+                          Margin="Margin.Dense"
+                          Class="mb-4" />
 
-        <button class="btn btn-primary" @onclick="HandleLogin">Ingresar</button>
+            <MudTextField @bind-Value="_password" 
+                          Label="Contraseña" 
+                          Variant="Variant.Outlined" 
+                          InputType="@_passwordInput"
+                          Adornment="Adornment.End"
+                          AdornmentIcon="@_passwordIcon"
+                          OnAdornmentClick="TogglePasswordVisibility"
+                          Margin="Margin.Dense"
+                          Class="mb-2" />
 
-        @if (!string.IsNullOrEmpty(_errorMessage))
-        {
-            <div class="alert alert-danger mt-3" role="alert">
-                @_errorMessage
-            </div>
-        }
-    </div>
-</div>
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Dense="true" Class="mt-2" ContentAlignment="HorizontalAlignment.Center">
+                    @_errorMessage
+                </MudAlert>
+            }
+
+        </MudCardContent>
+
+        <MudCardActions Class="d-flex justify-center pb-4 px-4">
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       FullWidth="true" 
+                       Size="Size.Large"
+                       OnClick="HandleLogin">
+                Ingresar
+            </MudButton>
+        </MudCardActions>
+    </MudCard>
+
+</MudContainer>
 
 @code {
     private string _username = string.Empty;
     private string _password = string.Empty;
     private string? _errorMessage;
+
+    bool _isShow;
+    InputType _passwordInput = InputType.Password;
+    string _passwordIcon = Icons.Material.Filled.VisibilityOff;
+
+    void TogglePasswordVisibility()
+    {
+        if (_isShow)
+        {
+            _isShow = false;
+            _passwordIcon = Icons.Material.Filled.VisibilityOff;
+            _passwordInput = InputType.Password;
+        }
+        else
+        {
+            _isShow = true;
+            _passwordIcon = Icons.Material.Filled.Visibility;
+            _passwordInput = InputType.Text;
+        }
+    }
 
     private async Task HandleLogin()
     {
@@ -45,7 +95,6 @@
 
             if (user != null)
             {
-
                 SessionService.Login(user);
                 NavigationManager.NavigateTo("/");
             }
