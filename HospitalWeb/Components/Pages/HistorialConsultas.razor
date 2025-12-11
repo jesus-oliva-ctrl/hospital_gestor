@@ -297,7 +297,7 @@
             }
 
             var doctores = await AdminDoctorService.GetAllDoctorsAsync();
-            var miDoctor = doctores.FirstOrDefault(d => d.UserId == SessionService.CurrentUser.UserID);
+            var miDoctor = doctores.FirstOrDefault(d => d.UserID == SessionService.CurrentUser.UserID);
 
             if (miDoctor == null)
             {

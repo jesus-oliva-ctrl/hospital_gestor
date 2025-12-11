@@ -1,13 +1,15 @@
 @page "/gestion-pacientes"
-@using HospitalData.Models
+@using HospitalData.DTOs
 @using HospitalData.Services
 @using HospitalWeb.Components.Shared
 @inject IAdminPatientService PatientService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <PageTitle>Gestión de Pacientes</PageTitle>
 
-<Autorizacion RolRequerido="Administrativo"> <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+<Autorizacion RolRequerido="Administrativo"> 
+    <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
         
         <MudStack Spacing="3">
             
@@ -28,6 +30,36 @@
                 <MudTabPanel Text="Lista de Pacientes" Icon="@Icons.Material.Filled.List">
                     <MudPaper Elevation="0" Class="pa-4">
                         
+                        <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                            
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudSwitch T="bool" 
+                                           ValueChanged="OnShowDeletedChanged"
+                                           Color="Color.Error"
+                                           Label="Papelera" />
+                                           
+                                <MudDivider Vertical="true" FlexItem="true" Class="mx-2"/>
+
+                                <MudIcon Icon="@Icons.Material.Filled.Badge" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6">Pacientes</MudText>
+                                
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                    @(_listaPacientes?.Count ?? 0)
+                                </MudChip>
+                            </MudStack>
+                            
+                            <MudTextField @bind-Value="_searchString" 
+                                          Placeholder="Buscar por nombre..." 
+                                          Adornment="Adornment.Start" 
+                                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                                          IconSize="Size.Medium"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Clearable="true"
+                                          Class="mt-0"
+                                          Style="min-width: 300px;" />
+                        </MudStack>
+
                         @if (_isLoading)
                         {
                             <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
@@ -37,8 +69,8 @@
                         }
                         else if (_listaPacientes == null || !_listaPacientes.Any())
                         {
-                            <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
-                                No hay pacientes registrados en el sistema.
+                            <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info" Class="my-4">
+                                @(_showingDeleted ? "La papelera de reciclaje está vacía." : "No hay pacientes registrados.")
                             </MudAlert>
                         }
                         else
@@ -48,34 +80,18 @@
                                       Hover="true" 
                                       Bordered="false" 
                                       Striped="true" 
-                                      Filter="new Func<Patient,bool>(FilterFunc1)"
+                                      Filter="new Func<PatientProfileDto,bool>(FilterFunc1)"
                                       Elevation="0">
-                                <ToolBarContent>
-                                    <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-grow-1">
-                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Badge" Color="Color.Primary" />
-                                            <MudText Typo="Typo.h6">Pacientes Registrados</MudText>
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">
-                                                @_listaPacientes.Count
-                                            </MudChip>
-                                        </MudStack>
-                                        <MudTextField @bind-Value="_searchString" 
-                                                      Placeholder="Buscar por nombre, apellido..." 
-                                                      Adornment="Adornment.Start" 
-                                                      AdornmentIcon="@Icons.Material.Filled.Search" 
-                                                      IconSize="Size.Medium"
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      Clearable="true" />
-                                    </MudStack>
-                                </ToolBarContent>
+                                
                                 <HeaderContent>
                                     <MudTh>ID</MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<Patient, object>(x=>x.FirstName)">Nombre</MudTableSortLabel></MudTh>
-                                    <MudTh><MudTableSortLabel SortBy="new Func<Patient, object>(x=>x.LastName)">Apellido</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PatientProfileDto, object>(x=>x.FirstName)">Nombre</MudTableSortLabel></MudTh>
+                                    <MudTh><MudTableSortLabel SortBy="new Func<PatientProfileDto, object>(x=>x.LastName)">Apellido</MudTableSortLabel></MudTh>
                                     <MudTh>Teléfono</MudTh>
                                     <MudTh>Email</MudTh>
+                                    <MudTh Style="text-align:center">Acciones</MudTh>
                                 </HeaderContent>
+                                
                                 <RowTemplate>
                                     <MudTd DataLabel="ID">
                                         <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.PatientId</MudChip>
@@ -92,22 +108,34 @@
                                         <MudText Typo="Typo.body1"><strong>@context.LastName</strong></MudText>
                                     </MudTd>
                                     <MudTd DataLabel="Teléfono">
-                                        @if (!string.IsNullOrEmpty(context.Phone))
+                                        <MudText Typo="Typo.body2">@(string.IsNullOrEmpty(context.Phone) ? "-" : context.Phone)</MudText>
+                                    </MudTd>
+                                    <MudTd DataLabel="Email">
+                                        <MudText Typo="Typo.body2">@context.Email</MudText>
+                                    </MudTd>
+                                    
+                                    <MudTd Style="text-align:center">
+                                        @if (_showingDeleted)
                                         {
-                                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
-                                                <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Color="Color.Info" />
-                                                <MudText Typo="Typo.body2">@context.Phone</MudText>
-                                            </MudStack>
+                                            <MudTooltip Text="Restaurar Paciente">
+                                                <MudIconButton Icon="@Icons.Material.Filled.RestoreFromTrash" 
+                                                               Color="Color.Success" 
+                                                               Size="Size.Small" 
+                                                               OnClick="@(() => HandleRestaurarPaciente(context))" />
+                                            </MudTooltip>
                                         }
                                         else
                                         {
-                                            <MudText Typo="Typo.body2" Color="Color.Secondary">-</MudText>
+                                            <MudTooltip Text="Dar de baja">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                               Color="Color.Error" 
+                                                               Size="Size.Small" 
+                                                               OnClick="@(() => HandleEliminarPaciente(context))" />
+                                            </MudTooltip>
                                         }
                                     </MudTd>
-                                    <MudTd DataLabel="Email">
-                                        <MudText Typo="Typo.body2">Registrado</MudText>
-                                    </MudTd>
                                 </RowTemplate>
+                                
                                 <PagerContent>
                                     <MudTablePager PageSizeOptions="new int[]{10, 25, 50, 100}" />
                                 </PagerContent>
@@ -130,56 +158,28 @@
                             <MudCardContent>
                                 <EditForm Model="_nuevoPaciente" OnValidSubmit="HandleCrearPaciente">
                                     <DataAnnotationsValidator />
-                                    
                                     <MudGrid>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoPaciente.FirstName" 
-                                                          Label="Nombres" 
-                                                          Variant="Variant.Outlined"
-                                                          Required="true"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Person" />
+                                            <MudTextField @bind-Value="_nuevoPaciente.FirstName" Label="Nombres" Variant="Variant.Outlined" Required="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoPaciente.LastName" 
-                                                          Label="Apellidos" 
-                                                          Variant="Variant.Outlined"
-                                                          Required="true"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Person" />
+                                            <MudTextField @bind-Value="_nuevoPaciente.LastName" Label="Apellidos" Variant="Variant.Outlined" Required="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoPaciente.Email" 
-                                                          Label="Email" 
-                                                          Variant="Variant.Outlined"
-                                                          InputType="InputType.Email" 
-                                                          Required="true"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Email" />
+                                            <MudTextField @bind-Value="_nuevoPaciente.Email" Label="Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoPaciente.Phone" 
-                                                          Label="Teléfono" 
-                                                          Variant="Variant.Outlined"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Phone" />
+                                            <MudTextField @bind-Value="_nuevoPaciente.Phone" Label="Teléfono" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone" />
                                         </MudItem>
                                     </MudGrid>
-
+                                    
                                     <MudDivider Class="my-4" />
 
-                                    <MudButton Variant="Variant.Filled" 
-                                               Color="Color.Primary" 
-                                               Size="Size.Large"
-                                               FullWidth="true"
-                                               StartIcon="@Icons.Material.Filled.Save"
-                                               ButtonType="ButtonType.Submit">
-                                        Registrar Paciente
-                                    </MudButton>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" StartIcon="@Icons.Material.Filled.Save" ButtonType="ButtonType.Submit">Registrar Paciente</MudButton>
                                 </EditForm>
                             </MudCardContent>
                         </MudCard>
-
+                        
                         <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true" Icon="@Icons.Material.Filled.Info">
                             Se creará automáticamente un usuario con contraseña por defecto (password123).
                         </MudAlert>
@@ -194,12 +194,12 @@
 </Autorizacion>
 
 @code {
-    private List<Patient>? _listaPacientes;
-    
+    private List<PatientProfileDto>? _listaPacientes;
     private CreatePatientModel _nuevoPaciente = new();
     
     private string _searchString = "";
     private bool _isLoading = true;
+    private bool _showingDeleted = false; 
 
     protected override async Task OnInitializedAsync()
     {
@@ -208,10 +208,17 @@
 
     private async Task CargarDatos()
     {
+        _isLoading = true;
         try
         {
-            _isLoading = true;
-            _listaPacientes = await PatientService.GetAllPatientsAsync();
+            if (_showingDeleted)
+            {
+                _listaPacientes = await PatientService.GetDeletedPatientsAsync();
+            }
+            else
+            {
+                _listaPacientes = await PatientService.GetAllPatientsAsync();
+            }
         }
         catch (Exception ex)
         {
@@ -223,41 +230,76 @@
         }
     }
 
+    private async Task OnShowDeletedChanged(bool showDeleted)
+    {
+        _showingDeleted = showDeleted;
+        await CargarDatos();
+        
+        if(_showingDeleted) 
+            Snackbar.Add("Viendo papelera de reciclaje", Severity.Warning);
+        else 
+            Snackbar.Add("Viendo lista activa", Severity.Info);
+    }
+
     private async Task HandleCrearPaciente()
     {
         try
         {
             await PatientService.CreatePatientAsync(
-                _nuevoPaciente.FirstName, 
-                _nuevoPaciente.LastName, 
-                _nuevoPaciente.Email, 
-                _nuevoPaciente.Phone
+                _nuevoPaciente.FirstName, _nuevoPaciente.LastName, 
+                _nuevoPaciente.Email, _nuevoPaciente.Phone
             );
-            
-            Snackbar.Add("Paciente registrado exitosamente", Severity.Success);
+            Snackbar.Add("Paciente registrado", Severity.Success);
             _nuevoPaciente = new(); 
-            
-            _listaPacientes = await PatientService.GetAllPatientsAsync();
+            if (_showingDeleted) { _showingDeleted = false; }
+            await CargarDatos();
         }
-        catch (Exception ex)
+        catch (Exception ex) { Snackbar.Add(ex.Message, Severity.Error); }
+    }
+
+    private async Task HandleEliminarPaciente(PatientProfileDto paciente)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Confirmar Baja", $"¿Desactivar a {paciente.FirstName} {paciente.LastName}?", yesText: "Desactivar", cancelText: "Cancelar");
+
+        if (confirmed == true)
         {
-            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+            await PatientService.SoftDeletePatientAsync(paciente.PatientId);
+            Snackbar.Add("Paciente desactivado.", Severity.Success);
+            await CargarDatos();
         }
     }
 
-    private bool FilterFunc1(Patient element) => FilterFunc(element, _searchString);
+    private async Task HandleRestaurarPaciente(PatientProfileDto paciente)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Confirmar Restauración", 
+            $"¿Reactivar al paciente {paciente.FirstName} {paciente.LastName}?", 
+            yesText: "Restaurar", cancelText: "Cancelar");
 
-    private bool FilterFunc(Patient element, string searchString)
+        if (confirmed == true)
+        {
+            try
+            {
+                await PatientService.RestorePatientAsync(paciente.PatientId);
+                Snackbar.Add("Paciente restaurado exitosamente.", Severity.Success);
+                await CargarDatos(); 
+            }
+            catch (Exception ex) { Snackbar.Add(ex.Message, Severity.Error); }
+        }
+    }
+
+    private bool FilterFunc1(PatientProfileDto element) => FilterFunc(element, _searchString);
+
+    private bool FilterFunc(PatientProfileDto element, string searchString)
     {
         if (string.IsNullOrWhiteSpace(searchString)) return true;
         if (element.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
         if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
-        if ($"{element.FirstName} {element.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
         return false;
     }
 
-    public class CreatePatientModel
-    {
+    public class CreatePatientModel {
         public string FirstName { get; set; } = "";
         public string LastName { get; set; } = "";
         public string Email { get; set; } = "";

@@ -63,5 +63,17 @@ namespace HospitalData.Services
                 pAddress
             );
         }
+        public async Task DeactivateUserEntityAsync(int userId, string roleName)
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync(
+                    $"EXEC SP_DeactivateEntity @UserID={userId}, @RoleName={roleName}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al desactivar el usuario: {ex.Message}");
+            }
+        }
     }
 }

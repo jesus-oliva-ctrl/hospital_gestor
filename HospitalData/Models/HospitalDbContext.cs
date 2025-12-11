@@ -54,6 +54,13 @@ public partial class HospitalDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Patient>().HasQueryFilter(p => p.IsActive);
+        modelBuilder.Entity<Doctor>().HasQueryFilter(d => d.IsActive);
+        modelBuilder.Entity<Staff>().HasQueryFilter(s => s.IsActive);
+        modelBuilder.Entity<Medication>().HasQueryFilter(m => m.IsActive);
+        modelBuilder.Entity<LaboratoryTechnician>().HasQueryFilter(l => l.IsActive);
+
+        
         modelBuilder.Entity<Appointment>(entity =>
         {
             entity.HasKey(e => e.AppointmentId).HasName("PK__Appointm__8ECDFCA2B59623D4");

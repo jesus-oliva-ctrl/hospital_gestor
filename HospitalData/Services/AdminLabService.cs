@@ -12,11 +12,13 @@ namespace HospitalData.Services
     {
         private readonly HospitalDbContext _context;
         private readonly IUserEntityFactory _userFactory;
+        private readonly IUserAccountService _userAccountService;
 
-        public AdminLabService(HospitalDbContext context, IUserEntityFactory userFactory)
+        public AdminLabService(HospitalDbContext context, IUserEntityFactory userFactory, IUserAccountService userAccountService)
         {
             _context = context;
             _userFactory = userFactory;
+            _userAccountService = userAccountService;
         }
 
         public async Task<List<LabTechnicianDto>> GetAllTechniciansAsync()
@@ -51,6 +53,52 @@ namespace HospitalData.Services
         {
             var sql = "EXEC SP_UpdateUserProfile @UserID={0}, @Username={1}, @Email={2}, @FirstName={3}, @LastName={4}, @Phone={5}";
             await _context.Database.ExecuteSqlRawAsync(sql, userId, username, email, name, lastName, phone);
+        }
+        public async Task SoftDeleteLabTechnicianAsync(int labTechId)
+        {
+            var tech = await _context.LaboratoryTechnicians
+                .Where(l => l.LabTechId == labTechId)
+                .Select(l => new { l.UserId })
+                .FirstOrDefaultAsync();
+
+            if (tech == null)
+            {
+                throw new Exception("Laboratorista no encontrado.");
+            }
+
+            await _userAccountService.DeactivateUserEntityAsync(tech.UserId, "Laboratorista");
+        }
+        public async Task<List<LabTechnicianDto>> GetDeletedTechniciansAsync()
+        {
+            return await _context.LaboratoryTechnicians
+                .IgnoreQueryFilters()
+                .Include(l => l.User)
+                .Include(l => l.Area)
+                .Where(l => !l.IsActive)
+                .Select(l => new LabTechnicianDto
+                {
+                    LabTechID = l.LabTechId,
+                    FirstName = l.FirstName,
+                    LastName = l.LastName,
+                    Phone = l.Phone,
+                    Email = l.User.Email,
+                    AreaName = l.Area.AreaName
+                })
+                .ToListAsync();
+        }
+
+
+        public async Task RestoreTechnicianAsync(int labTechId)
+        {
+            var tech = await _context.LaboratoryTechnicians
+                .IgnoreQueryFilters()
+                .FirstOrDefaultAsync(l => l.LabTechId == labTechId);
+
+            if (tech == null) 
+                throw new Exception("Laboratorista no encontrado.");
+
+            await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"EXEC SP_ReactivateEntity @UserID={tech.UserId}, @RoleName='Laboratorista'");
         }
     }
 }

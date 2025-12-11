@@ -53,6 +53,8 @@ builder.Services.AddScoped<HospitalData.Factories.IUserEntityFactory, HospitalDa
 
 builder.Services.AddTransient<HospitalData.Builders.ILabResultBuilder, HospitalData.Builders.LabResultBuilder>();
 
+builder.Services.AddScoped<ICatalogService, CatalogService>();
+
 var app = builder.Build();
 
 

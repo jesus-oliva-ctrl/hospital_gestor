@@ -4,6 +4,7 @@
 @using HospitalWeb.Components.Shared
 @inject IAdminLabService AdminService
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService 
 
 <PageTitle>Gestión de Laboratoristas</PageTitle>
 
@@ -30,6 +31,36 @@
                 <MudTabPanel Text="Lista de Técnicos" Icon="@Icons.Material.Filled.List">
                     <MudPaper Elevation="0" Class="pa-4">
                         
+                        <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-4">
+                            
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                <MudSwitch T="bool" 
+                                           ValueChanged="OnShowDeletedChanged"
+                                           Color="Color.Error"
+                                           Label="Papelera" />
+                                
+                                <MudDivider Vertical="true" FlexItem="true" Class="mx-2"/>
+
+                                <MudIcon Icon="@Icons.Material.Filled.Badge" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6">Técnicos</MudText>
+                                
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">
+                                    @(_listaTecnicos?.Count ?? 0)
+                                </MudChip>
+                            </MudStack>
+
+                            <MudTextField @bind-Value="_searchString" 
+                                          Placeholder="Buscar por nombre o área..." 
+                                          Adornment="Adornment.Start" 
+                                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                                          IconSize="Size.Medium"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Clearable="true"
+                                          Class="mt-0"
+                                          Style="min-width: 300px;" />
+                        </MudStack>
+
                         @if (_isLoading)
                         {
                             <MudStack AlignItems="AlignItems.Center" Spacing="3" Class="pa-8">
@@ -39,8 +70,8 @@
                         }
                         else if (_listaTecnicos == null || !_listaTecnicos.Any())
                         {
-                            <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info">
-                                No hay laboratoristas registrados en el sistema
+                            <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Info" Class="my-4">
+                                @(_showingDeleted ? "La papelera está vacía." : "No hay laboratoristas registrados.")
                             </MudAlert>
                         }
                         else
@@ -52,32 +83,16 @@
                                       Striped="true" 
                                       Filter="new Func<LabTechnicianDto,bool>(FilterFunc1)"
                                       Elevation="0">
-                                <ToolBarContent>
-                                    <MudStack Row="true" JustifyContent="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-grow-1">
-                                        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                            <MudIcon Icon="@Icons.Material.Filled.Badge" Color="Color.Primary" />
-                                            <MudText Typo="Typo.h6">Técnicos Registrados</MudText>
-                                            <MudChip T="string" Size="Size.Small" Color="Color.Primary">
-                                                @_listaTecnicos.Count
-                                            </MudChip>
-                                        </MudStack>
-                                        <MudTextField @bind-Value="_searchString" 
-                                                      Placeholder="Buscar por nombre o área..." 
-                                                      Adornment="Adornment.Start" 
-                                                      AdornmentIcon="@Icons.Material.Filled.Search" 
-                                                      IconSize="Size.Medium"
-                                                      Variant="Variant.Outlined"
-                                                      Margin="Margin.Dense"
-                                                      Clearable="true" />
-                                    </MudStack>
-                                </ToolBarContent>
+                                
                                 <HeaderContent>
                                     <MudTh>ID</MudTh>
                                     <MudTh><MudTableSortLabel SortBy="new Func<LabTechnicianDto, object>(x=>x.FirstName)">Nombre</MudTableSortLabel></MudTh>
                                     <MudTh><MudTableSortLabel SortBy="new Func<LabTechnicianDto, object>(x=>x.LastName)">Apellido</MudTableSortLabel></MudTh>
                                     <MudTh>Teléfono</MudTh>
                                     <MudTh><MudTableSortLabel SortBy="new Func<LabTechnicianDto, object>(x=>x.AreaName)">Área Asignada</MudTableSortLabel></MudTh>
+                                    <MudTh Style="text-align:center">Acciones</MudTh>
                                 </HeaderContent>
+
                                 <RowTemplate>
                                     <MudTd DataLabel="ID">
                                         <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@context.LabTechID</MudChip>
@@ -111,6 +126,28 @@
                                             @context.AreaName
                                         </MudChip>
                                     </MudTd>
+                                    
+                                    <MudTd Style="text-align:center">
+                                        @if (_showingDeleted)
+                                        {
+                                            <MudTooltip Text="Restaurar Técnico">
+                                                <MudIconButton Icon="@Icons.Material.Filled.RestoreFromTrash" 
+                                                               Color="Color.Success" 
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => HandleRestaurarTecnico(context))" />
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudTooltip Text="Dar de baja">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Delete" 
+                                                               Color="Color.Error" 
+                                                               Size="Size.Small"
+                                                               OnClick="@(() => HandleEliminarTecnico(context))" />
+                                            </MudTooltip>
+                                        }
+                                    </MudTd>
+
                                 </RowTemplate>
                                 <PagerContent>
                                     <MudTablePager PageSizeOptions="new int[]{10, 25, 50, 100}" />
@@ -137,47 +174,19 @@
                                     
                                     <MudGrid>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoTecnico.FirstName" 
-                                                          Label="Nombres" 
-                                                          Variant="Variant.Outlined"
-                                                          Required="true"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Person" />
+                                            <MudTextField @bind-Value="_nuevoTecnico.FirstName" Label="Nombres" Variant="Variant.Outlined" Required="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoTecnico.LastName" 
-                                                          Label="Apellidos" 
-                                                          Variant="Variant.Outlined"
-                                                          Required="true"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Person" />
+                                            <MudTextField @bind-Value="_nuevoTecnico.LastName" Label="Apellidos" Variant="Variant.Outlined" Required="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoTecnico.Email" 
-                                                          Label="Email" 
-                                                          Variant="Variant.Outlined"
-                                                          InputType="InputType.Email" 
-                                                          Required="true"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Email" />
+                                            <MudTextField @bind-Value="_nuevoTecnico.Email" Label="Email" Variant="Variant.Outlined" InputType="InputType.Email" Required="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email" />
                                         </MudItem>
                                         <MudItem xs="12" sm="6">
-                                            <MudTextField @bind-Value="_nuevoTecnico.Phone" 
-                                                          Label="Teléfono" 
-                                                          Variant="Variant.Outlined"
-                                                          Adornment="Adornment.Start"
-                                                          AdornmentIcon="@Icons.Material.Filled.Phone" />
+                                            <MudTextField @bind-Value="_nuevoTecnico.Phone" Label="Teléfono" Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone" />
                                         </MudItem>
-                                        
                                         <MudItem xs="12">
-                                            <MudSelect T="int" 
-                                                       Label="Área de Laboratorio" 
-                                                       @bind-Value="_nuevoTecnico.AreaID"
-                                                       Variant="Variant.Outlined"
-                                                       AnchorOrigin="Origin.BottomCenter"
-                                                       Adornment="Adornment.Start"
-                                                       AdornmentIcon="@Icons.Material.Filled.Category"
-                                                       Required="true">
+                                            <MudSelect T="int" Label="Área de Laboratorio" @bind-Value="_nuevoTecnico.AreaID" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Category" Required="true">
                                                 <MudSelectItem Value="0">-- Seleccione un Área --</MudSelectItem>
                                                 @foreach (var area in _listaAreas)
                                                 {
@@ -189,21 +198,10 @@
 
                                     <MudDivider Class="my-4" />
 
-                                    <MudButton Variant="Variant.Filled" 
-                                               Color="Color.Primary" 
-                                               Size="Size.Large"
-                                               FullWidth="true"
-                                               StartIcon="@Icons.Material.Filled.Save"
-                                               ButtonType="ButtonType.Submit">
-                                        Registrar Laboratorista
-                                    </MudButton>
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" StartIcon="@Icons.Material.Filled.Save" ButtonType="ButtonType.Submit">Registrar Laboratorista</MudButton>
                                 </EditForm>
                             </MudCardContent>
                         </MudCard>
-
-                        <MudAlert Severity="Severity.Info" Class="mt-4" Dense="true" Icon="@Icons.Material.Filled.Info">
-                            Se creará automáticamente un usuario con contraseña por defecto para el nuevo técnico.
-                        </MudAlert>
                     </MudPaper>
                 </MudTabPanel>
             </MudTabs>
@@ -222,10 +220,48 @@
     
     private string _searchString = "";
     private bool _isLoading = true;
+    private bool _showingDeleted = false; 
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarDatos();
+        await CargarDatosIniciales();
+    }
+
+    private async Task CargarDatosIniciales()
+    {
+        try
+        {
+            _isLoading = true;
+            _listaAreas = await AdminService.GetAllAreasAsync();
+
+            if (_showingDeleted)
+            {
+                _listaTecnicos = await AdminService.GetDeletedTechniciansAsync();
+            }
+            else
+            {
+                _listaTecnicos = await AdminService.GetAllTechniciansAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OnShowDeletedChanged(bool showDeleted)
+    {
+        _showingDeleted = showDeleted;
+        await CargarDatosIniciales();
+        
+        if(_showingDeleted) 
+            Snackbar.Add("Viendo papelera de reciclaje", Severity.Warning);
+        else 
+            Snackbar.Add("Viendo lista activa", Severity.Info);
     }
 
     private async Task HandleCrearTecnico()
@@ -239,16 +275,15 @@
         try
         {
             await AdminService.CreateTechnicianAsync(
-                _nuevoTecnico.FirstName, 
-                _nuevoTecnico.LastName, 
-                _nuevoTecnico.Email, 
-                _nuevoTecnico.Phone, 
-                _nuevoTecnico.AreaID
+                _nuevoTecnico.FirstName, _nuevoTecnico.LastName, 
+                _nuevoTecnico.Email, _nuevoTecnico.Phone, _nuevoTecnico.AreaID
             );
 
             Snackbar.Add("Laboratorista creado exitosamente", Severity.Success);
             _nuevoTecnico = new(); 
-            await CargarDatos(); 
+            
+            if (_showingDeleted) _showingDeleted = false;
+            await CargarDatosIniciales();
         }
         catch (Exception ex)
         {
@@ -256,41 +291,53 @@
         }
     }
 
-    private async Task CargarDatos()
+    private async Task HandleEliminarTecnico(LabTechnicianDto tecnico)
     {
-        try
-        {
-            _isLoading = true;
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Confirmar Baja", 
+            $"¿Desactivar al técnico {tecnico.FirstName} {tecnico.LastName}?", 
+            yesText: "Desactivar", cancelText: "Cancelar");
 
-            _listaTecnicos = await AdminService.GetAllTechniciansAsync();
-
-            _listaAreas = await AdminService.GetAllAreasAsync();
-        }
-        catch (Exception ex)
+        if (confirmed == true)
         {
-            Snackbar.Add($"Error al cargar datos: {ex.Message}", Severity.Error);
-        }
-        finally
-        {
-            _isLoading = false;
+            try
+            {
+                await AdminService.SoftDeleteLabTechnicianAsync(tecnico.LabTechID);
+                Snackbar.Add("Laboratorista desactivado.", Severity.Success);
+                await CargarDatosIniciales();
+            }
+            catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
         }
     }
 
+    private async Task HandleRestaurarTecnico(LabTechnicianDto tecnico)
+    {
+        bool? confirmed = await DialogService.ShowMessageBox(
+            "Confirmar Restauración", 
+            $"¿Reactivar al técnico {tecnico.FirstName} {tecnico.LastName}?", 
+            yesText: "Restaurar", cancelText: "Cancelar");
+
+        if (confirmed == true)
+        {
+            try
+            {
+                await AdminService.RestoreTechnicianAsync(tecnico.LabTechID);
+                Snackbar.Add("Laboratorista restaurado.", Severity.Success);
+                await CargarDatosIniciales();
+            }
+            catch (Exception ex) { Snackbar.Add($"Error: {ex.Message}", Severity.Error); }
+        }
+    }
 
     private bool FilterFunc1(LabTechnicianDto element) => FilterFunc(element, _searchString);
 
     private bool FilterFunc(LabTechnicianDto element, string searchString)
     {
-        if (string.IsNullOrWhiteSpace(searchString)) 
-            return true;
-        if (element.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) 
-            return true;
-        if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) 
-            return true;
-        if ($"{element.FirstName} {element.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)) 
-            return true;
-        if (element.AreaName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
-            return true;
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (element.FirstName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if (element.LastName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if ($"{element.FirstName} {element.LastName}".Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
+        if (element.AreaName.Contains(searchString, StringComparison.OrdinalIgnoreCase)) return true;
         return false;
     }
 

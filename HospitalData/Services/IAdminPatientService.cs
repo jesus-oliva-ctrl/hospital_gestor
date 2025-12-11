@@ -7,7 +7,10 @@ namespace HospitalData.Services
 {
     public interface IAdminPatientService
     {
-        Task<List<Patient>> GetAllPatientsAsync();
+        Task<List<PatientProfileDto>> GetAllPatientsAsync();
         Task CreatePatientAsync(string firstName, string lastName, string email, string phone);
+        Task SoftDeletePatientAsync(int patientId);
+        Task<List<PatientProfileDto>> GetDeletedPatientsAsync();
+        Task RestorePatientAsync(int patientId);
     }
 }

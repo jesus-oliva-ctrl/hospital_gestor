@@ -7,5 +7,6 @@ namespace HospitalData.Services
     {    
         Task<UserProfileDto> GetUserProfileAsync(int userId);
         Task UpdateUserProfileAsync(UserProfileDto profile);
+        Task DeactivateUserEntityAsync(int userId, string roleName);
     }
 }
