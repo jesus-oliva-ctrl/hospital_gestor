@@ -61,7 +61,9 @@
                         var isExpiringSoon = daysUntilExpiry >= 0 && daysUntilExpiry < 3;
 
                         <MudItem xs="12" sm="6" md="4">
-                            <MudCard Elevation="3" Class="@(isExpiringSoon ? "mud-theme-warning" : "")">
+                            <MudCard Elevation="3" 
+                                     Outlined="@isExpiringSoon"
+                                     Class="@(isExpiringSoon ? "border-solid border-2 mud-border-info" : "")">
                                 
                                 <MudCardHeader>
                                     <CardHeaderContent>
@@ -73,7 +75,7 @@
                                                 <MudText Typo="Typo.h6">@receta.MedicationName</MudText>
                                                 @if (isExpiringSoon)
                                                 {
-                                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Icon="@Icons.Material.Filled.Warning">
+                                                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.Warning">
                                                         Vence pronto
                                                     </MudChip>
                                                 }
@@ -125,7 +127,7 @@
                                         
                                 @if (isExpiringSoon && daysUntilExpiry > 0)
                                 {
-                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Info">
                                         @((int)daysUntilExpiry) día@(daysUntilExpiry > 1 ? "s" : "") restante@(daysUntilExpiry > 1 ? "s" : "")
                                     </MudChip>
                                 }

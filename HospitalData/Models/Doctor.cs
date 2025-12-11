@@ -24,6 +24,9 @@ public partial class Doctor
     public virtual ICollection<Prescription> Prescriptions { get; set; } = new List<Prescription>();
 
     public virtual User? User { get; set; }
+    
     public virtual Specialty? Specialty { get; set; }
+
+    public bool IsActive { get; set; }
     
 }

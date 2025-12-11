@@ -45,7 +45,12 @@ public partial class HospitalDbContext : DbContext
     public virtual DbSet<VwPatientAppointment> VwPatientAppointments { get; set; }
 
     public virtual DbSet<AuthenticatedUser> AuthenticatedUsers { get; set; }
+
     public virtual DbSet<AppointmentDetailDto> StaffAppointmentManagementView { get; set; }
+
+    public virtual DbSet<LaboratoryTechnician> LaboratoryTechnicians { get; set; }
+
+    public virtual DbSet<LabArea> LabAreas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
