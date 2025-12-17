@@ -17,7 +17,6 @@ namespace HospitalData.Features.Laboratorio.Portal.VerResultadoDetalle
 
         public async Task<LabResult?> Handle(VerResultadoDetalleQuery request, CancellationToken cancellationToken)
         {
-            // Migración de GetResultByRequestIdAsync
             return await _collection.Find(x => x.RequestId == request.RequestId)
                                     .FirstOrDefaultAsync(cancellationToken);
         }

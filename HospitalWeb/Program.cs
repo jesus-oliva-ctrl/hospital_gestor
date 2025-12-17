@@ -45,10 +45,6 @@ builder.Services.AddSingleton<UserSessionService>();
 //Modulo de Servicios de Dominio
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(HospitalData.Models.HospitalDbContext).Assembly));
 
-builder.Services.AddScoped<IStaffService, StaffService>();
-
-
-
 
 //Modulo de Servicios Transversales
 builder.Services.AddScoped<IAppointmentManagementService, AppointmentManagementService>();
