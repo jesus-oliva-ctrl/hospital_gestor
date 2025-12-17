@@ -27,19 +27,14 @@ builder.Services.AddSingleton<UserSessionService>();
 
 
 //Modulo de Servicios de Dominio
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(HospitalData.Models.HospitalDbContext).Assembly));
+
 builder.Services.AddScoped<IStaffService, StaffService>();
-
-builder.Services.AddScoped<IDoctorService, DoctorService>();
-
-builder.Services.AddScoped<IPatientService, PatientService>();
 
 builder.Services.AddScoped<ILabResultService, LabResultService>();
 
 builder.Services.AddScoped<IAdminLabService, AdminLabService>();
 
-builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
-
-builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 
 
 //Modulo de Servicios Transversales
