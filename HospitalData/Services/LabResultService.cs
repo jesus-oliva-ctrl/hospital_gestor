@@ -32,7 +32,7 @@ namespace HospitalData.Services
             _collection = database.GetCollection<LabResult>(collectionName);
         }
 
-
+    
         public async Task CreateResultAsync(LabResult result)
         {
             await _collection.InsertOneAsync(result);

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Data; 
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient; 
 using HospitalData.DTOs;
+using System.Threading.Tasks; 
 
 namespace HospitalData.Models;
 
@@ -14,6 +17,21 @@ public partial class HospitalDbContext : DbContext
     public HospitalDbContext(DbContextOptions<HospitalDbContext> options)
         : base(options)
     {
+    }
+
+    public async Task SetAuditContextAsync(int userId, string userName)
+    {
+        if (this.Database.GetDbConnection().State != ConnectionState.Open)
+        {
+            await this.Database.OpenConnectionAsync();
+        }
+
+
+        await this.Database.ExecuteSqlRawAsync(
+            "EXEC sp_set_session_context 'CurrentUserID', @uid; EXEC sp_set_session_context 'CurrentUserName', @uname",
+            new SqlParameter("@uid", userId),
+            new SqlParameter("@uname", userName)
+        );
     }
 
     public virtual DbSet<Appointment> Appointments { get; set; }

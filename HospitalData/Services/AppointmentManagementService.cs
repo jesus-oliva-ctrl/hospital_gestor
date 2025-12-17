@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace HospitalData.Services
 {
-    //Clase para la gestion de citas medicas
     public class AppointmentManagementService : IAppointmentManagementService
     {
         private readonly HospitalDbContext _context;

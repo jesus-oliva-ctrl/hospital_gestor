@@ -41,6 +41,8 @@ builder.Services.AddScoped<IAdminDoctorService, AdminDoctorService>();
 
 builder.Services.AddScoped<IAdminPatientService, AdminPatientService>();
 
+builder.Services.AddScoped<HospitalData.Services.ICurrentUserService, HospitalWeb.Services.CurrentUserService>();
+
 
 //Modulo de Servicios Transversales
 builder.Services.AddScoped<IAppointmentManagementService, AppointmentManagementService>();
