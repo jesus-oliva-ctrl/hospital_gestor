@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using HospitalData.Services;
 using HospitalData.DTOs;
 using MudBlazor.Services;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,21 @@ builder.Services.AddRazorPages();
 builder.Services.AddDbContext<HospitalDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("HospitalDB"))
 );
+
+builder.Services.AddSingleton<IMongoClient>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var mongoConn = config.GetConnectionString("MongoConnection");
+    return new MongoClient(mongoConn);
+});
+
+builder.Services.AddScoped<IMongoDatabase>(sp =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var client = sp.GetRequiredService<IMongoClient>();    
+    var dbName = config["MongoDbSettings:DatabaseName"] ?? "HospitalLabDB";
+    return client.GetDatabase(dbName);
+});
 
 builder.Services.AddMudServices();
 
@@ -31,9 +47,6 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Hospi
 
 builder.Services.AddScoped<IStaffService, StaffService>();
 
-builder.Services.AddScoped<ILabResultService, LabResultService>();
-
-builder.Services.AddScoped<IAdminLabService, AdminLabService>();
 
 
 

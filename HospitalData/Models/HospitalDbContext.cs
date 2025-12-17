@@ -45,7 +45,12 @@ public partial class HospitalDbContext : DbContext
     public virtual DbSet<VwPatientAppointment> VwPatientAppointments { get; set; }
 
     public virtual DbSet<AuthenticatedUser> AuthenticatedUsers { get; set; }
+
     public virtual DbSet<AppointmentDetailDto> StaffAppointmentManagementView { get; set; }
+
+    public virtual DbSet<LaboratoryTechnician> LaboratoryTechnicians { get; set; }
+
+    public virtual DbSet<LabArea> LabAreas { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -315,6 +320,54 @@ public partial class HospitalDbContext : DbContext
         {
             eb.HasNoKey();
             eb.ToView("VW_StaffAppointmentManagement");
+        });
+
+        modelBuilder.Entity<LabArea>(entity =>
+        {
+            entity.ToTable("LabAreas"); 
+            entity.HasKey(e => e.AreaId);
+
+            entity.Property(e => e.AreaId).HasColumnName("AreaID");
+            
+            entity.Property(e => e.AreaName)
+                .HasMaxLength(100) 
+                .IsRequired();
+
+            entity.Property(e => e.Description)
+                .HasMaxLength(255); 
+        });
+
+        modelBuilder.Entity<LaboratoryTechnician>(entity =>
+        {
+            entity.ToTable("LaboratoryTechnicians"); 
+            entity.HasKey(e => e.LabTechId);
+
+            entity.Property(e => e.LabTechId).HasColumnName("LabTechID");
+            entity.Property(e => e.AreaId).HasColumnName("AreaID");
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(100) 
+                .IsRequired();
+
+            entity.Property(e => e.LastName)
+                .HasMaxLength(100) 
+                .IsRequired();
+
+            entity.Property(e => e.Phone)
+                .HasMaxLength(20); 
+
+            
+            entity.HasOne(d => d.User)
+                .WithOne() 
+                .HasForeignKey<LaboratoryTechnician>(d => d.UserId)
+                .HasConstraintName("FK_LabTech_Users");
+
+            entity.HasOne(d => d.Area)
+                .WithMany(p => p.LaboratoryTechnicians)
+                .HasForeignKey(d => d.AreaId)
+                .OnDelete(DeleteBehavior.ClientSetNull) 
+                .HasConstraintName("FK_LabTech_Area");
         });
 
         OnModelCreatingPartial(modelBuilder);
