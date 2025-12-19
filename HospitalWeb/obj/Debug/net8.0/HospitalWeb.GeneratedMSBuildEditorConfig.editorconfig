@@ -25,6 +25,10 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Layout/EmptyLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvRW1wdHlMYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Pages/AgendarCita.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZ2VuZGFyQ2l0YS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
@@ -123,6 +127,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Shared/LabResultDialog.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvTGFiUmVzdWx0RGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/Shared/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvUmVkaXJlY3RUb0xvZ2luLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
 [/mnt/night_projects/UCB/hospital_system_git/hospital_gestor/HospitalWeb/Components/_Imports.razor]

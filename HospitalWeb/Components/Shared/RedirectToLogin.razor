@@ -1,0 +1,20 @@
+@inject NavigationManager NavigationManager
+@using Microsoft.AspNetCore.Components.Authorization
+
+@code {
+    protected override void OnInitialized()
+    {
+        // Obtenemos la URL actual
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+
+        // LÓGICA CLAVE:
+        // 1. Si NO estamos ya en la página de login...
+        // 2. ... redirigimos al usuario a "/login"
+        if (!uri.AbsolutePath.Contains("/login", StringComparison.OrdinalIgnoreCase))
+        {
+            // El 'true' al final fuerza la carga desde el servidor, 
+            // lo que a veces ayuda a limpiar estados "basura" que causan la pantalla blanca.
+            NavigationManager.NavigateTo("/login", true);
+        }
+    }
+}
