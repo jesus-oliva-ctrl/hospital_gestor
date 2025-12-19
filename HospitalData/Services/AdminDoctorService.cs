@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using System; 
 
 namespace HospitalData.Services
 {
@@ -14,12 +15,18 @@ namespace HospitalData.Services
         private readonly HospitalDbContext _context;
         private readonly IUserEntityFactory _userFactory;
         private readonly IUserAccountService _userAccountService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AdminDoctorService(HospitalDbContext context, IUserEntityFactory userFactory, IUserAccountService userAccountService)
+        public AdminDoctorService(
+            HospitalDbContext context, 
+            IUserEntityFactory userFactory, 
+            IUserAccountService userAccountService,
+            ICurrentUserService currentUserService)
         {
             _context = context;
             _userFactory = userFactory;
             _userAccountService = userAccountService;
+            _currentUserService = currentUserService;
         }
 
         public async Task<List<DoctorProfileDto>> GetAllDoctorsAsync()
@@ -54,6 +61,13 @@ namespace HospitalData.Services
 
         public async Task CreateDoctorAsync(CreateDoctorDto dto)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
 
             var parameters = _userFactory.CreateParameters(
                 dto.FirstName,
@@ -68,6 +82,7 @@ namespace HospitalData.Services
             
             await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
+
         public async Task SoftDeleteDoctorAsync(int doctorId)
         {
             var doctor = await _context.Doctors
@@ -80,6 +95,7 @@ namespace HospitalData.Services
 
             await _userAccountService.DeactivateUserEntityAsync(doctor.UserId.Value, "Medico");
         }
+
         public async Task<List<DoctorProfileDto>> GetDeletedDoctorsAsync()
         {
             return await _context.Doctors
@@ -101,6 +117,14 @@ namespace HospitalData.Services
 
         public async Task RestoreDoctorAsync(int doctorId)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
+
             var doctor = await _context.Doctors
                 .IgnoreQueryFilters()
                 .FirstOrDefaultAsync(d => d.DoctorId == doctorId);

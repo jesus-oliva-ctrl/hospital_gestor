@@ -11,10 +11,12 @@ namespace HospitalData.Services
     public class UserAccountService : IUserAccountService
     {
         private readonly HospitalDbContext _context;
+        private readonly ICurrentUserService _currentUserService;
 
-        public UserAccountService(HospitalDbContext context)
+        public UserAccountService(HospitalDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         public async Task<UserProfileDto> GetUserProfileAsync(int userId)
@@ -28,6 +30,14 @@ namespace HospitalData.Services
 
         public async Task UpdateUserProfileAsync(UserProfileDto profile)
         {
+            var currentUserId = await _currentUserService.GetCurrentUserIdAsync();
+            var currentUserName = await _currentUserService.GetCurrentUserNameAsync();
+            
+            if (currentUserId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(currentUserId.Value, currentUserName);
+            }
+
             var pUserId = new SqlParameter("@UserID", profile.UserID);
             var pUsername = new SqlParameter("@Username", profile.Username);
             var pEmail = new SqlParameter("@Email", profile.Email);
@@ -63,10 +73,19 @@ namespace HospitalData.Services
                 pAddress
             );
         }
+
         public async Task DeactivateUserEntityAsync(int userId, string roleName)
         {
             try
             {
+                var currentUserId = await _currentUserService.GetCurrentUserIdAsync();
+                var currentUserName = await _currentUserService.GetCurrentUserNameAsync();
+
+                if (currentUserId.HasValue) 
+                {
+                    await _context.SetAuditContextAsync(currentUserId.Value, currentUserName);
+                }
+
                 await _context.Database.ExecuteSqlInterpolatedAsync(
                     $"EXEC SP_DeactivateEntity @UserID={userId}, @RoleName={roleName}");
             }

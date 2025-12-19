@@ -12,21 +12,21 @@ namespace HospitalData.Services
     public class StaffService : IStaffService
     {
         private readonly HospitalDbContext _context;
-        private readonly IUserEntityFactory _userFactory;
+        
+        private readonly ICurrentUserService _currentUserService;
 
-        public StaffService(HospitalDbContext context)
+        public StaffService(HospitalDbContext context, ICurrentUserService currentUserService)
         {
             _context = context;
+            _currentUserService = currentUserService;
         }
 
         public async Task<List<InventoryDto>> ObtenerInventarioAsync()
         {
-
             return await _context.Medications
                 .Join(_context.Inventories,
                       med => med.MedicationId,
                       inv => inv.MedicationId,
-
                         (med, inv) => new InventoryDto
                       {
                           MedicationId = med.MedicationId,
@@ -41,6 +41,15 @@ namespace HospitalData.Services
 
         public async Task CrearMedicamentoAsync(CreateMedicationDto nuevoMedicamento)
         {
+            
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
+
             var medication = new Medication
             {
                 Name = nuevoMedicamento.Name,
@@ -61,6 +70,15 @@ namespace HospitalData.Services
 
         public async Task ActualizarStockAsync(UpdateStockDto stockUpdate)
         {
+            // Auditoría
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
+
             var inventoryItem = await _context.Inventories
                 .FirstOrDefaultAsync(i => i.MedicationId == stockUpdate.MedicationId);
 
@@ -68,6 +86,7 @@ namespace HospitalData.Services
             {
                 inventoryItem.Quantity += stockUpdate.QuantityToAdd;
                 inventoryItem.LastUpdated = DateTime.Now;
+                
                 await _context.SaveChangesAsync();
             }
             else
@@ -83,6 +102,4 @@ namespace HospitalData.Services
                                 .ToListAsync();
         }
     }
-
-    
 }

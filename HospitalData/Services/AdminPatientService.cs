@@ -5,6 +5,8 @@ using HospitalData.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
+using System.Linq;
 
 namespace HospitalData.Services
 {
@@ -13,12 +15,18 @@ namespace HospitalData.Services
         private readonly HospitalDbContext _context;
         private readonly IUserEntityFactory _userFactory;
         private readonly IUserAccountService _userAccountService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public AdminPatientService(HospitalDbContext context, IUserEntityFactory userFactory, IUserAccountService userAccountService)
+        public AdminPatientService(
+            HospitalDbContext context, 
+            IUserEntityFactory userFactory, 
+            IUserAccountService userAccountService,
+            ICurrentUserService currentUserService)
         {
             _context = context;
             _userFactory = userFactory;
             _userAccountService = userAccountService;
+            _currentUserService = currentUserService;
         }
 
         public async Task<List<PatientProfileDto>> GetAllPatientsAsync()
@@ -42,6 +50,14 @@ namespace HospitalData.Services
 
         public async Task CreatePatientAsync(string firstName, string lastName, string email, string phone)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
+
             var parameters = _userFactory.CreateParameters(
                 firstName,
                 lastName,
@@ -55,6 +71,7 @@ namespace HospitalData.Services
             
             await _context.Database.ExecuteSqlRawAsync(sql, parameters);
         }
+
         public async Task SoftDeletePatientAsync(int patientId)
         {
             var patient = await _context.Patients
@@ -69,6 +86,7 @@ namespace HospitalData.Services
 
             await _userAccountService.DeactivateUserEntityAsync(patient.UserId.Value, "Paciente");
         }
+
         public async Task<List<PatientProfileDto>> GetDeletedPatientsAsync()
         {
             return await _context.Patients
@@ -88,9 +106,16 @@ namespace HospitalData.Services
                 .ToListAsync();
         }
 
-        // 2. Restaurar Paciente
         public async Task RestorePatientAsync(int patientId)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
+
             var patient = await _context.Patients
                 .IgnoreQueryFilters() 
                 .FirstOrDefaultAsync(p => p.PatientId == patientId);
@@ -98,7 +123,6 @@ namespace HospitalData.Services
             if (patient == null || patient.UserId == null) 
                 throw new Exception("Paciente no encontrado en la papelera.");
 
-            // Llama al SP de Reactivación
             await _context.Database.ExecuteSqlInterpolatedAsync(
                 $"EXEC SP_ReactivateEntity @UserID={patient.UserId}, @RoleName='Paciente'");
         }

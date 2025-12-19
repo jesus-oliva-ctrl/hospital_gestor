@@ -4,32 +4,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HospitalData.DTOs;
-
+using System;
 
 namespace HospitalData.Services
 {
     public class DoctorService : IDoctorService
     {
-        //Dependencias de interfaces
+        // Dependencias
         private readonly HospitalDbContext _context;
         private readonly IAppointmentManagementService _appointmentService;
         private readonly IPrescriptionManagementService _prescriptionService;
         private readonly IUserAccountService _userAccountService;
+        
+        private readonly ICurrentUserService _currentUserService;
 
-        //Inyeccion de dependencias a traves del constructor
-        public DoctorService(HospitalDbContext context, IAppointmentManagementService appointmentService, IPrescriptionManagementService prescriptionService, IUserAccountService userAccountService)
+        public DoctorService(
+            HospitalDbContext context, 
+            IAppointmentManagementService appointmentService, 
+            IPrescriptionManagementService prescriptionService, 
+            IUserAccountService userAccountService,
+            ICurrentUserService currentUserService) 
         {
             _context = context;
             _appointmentService = appointmentService;
             _prescriptionService = prescriptionService;
             _userAccountService = userAccountService;
+            _currentUserService = currentUserService;
         }
 
-        //Metodos 
-        
+
         public async Task<List<VwDoctorAgendaSummary>> GetMyAgendaAsync(int loggedInUserId)
         {
-
             var doctor = await _context.Doctors
                                     .FirstOrDefaultAsync(d => d.UserId == loggedInUserId);
 
@@ -40,12 +45,12 @@ namespace HospitalData.Services
 
             int correctDoctorId = doctor.DoctorId;
 
-
             return await _context.VwDoctorAgendaSummaries
                                 .Where(cita => cita.DoctorId == correctDoctorId)
                                 .OrderBy(cita => cita.AppointmentDate)
                                 .ToListAsync();
         }
+
         public async Task<Appointment?> GetAppointmentDetailsAsync(int appointmentId)
         {
             return await _context.Appointments
@@ -53,8 +58,17 @@ namespace HospitalData.Services
                                 .FirstOrDefaultAsync(a => a.AppointmentId == appointmentId);
         }
 
+
         public async Task CompleteAppointmentAsync(int appointmentId, string diagnosisNotes)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+            if (userId.HasValue) 
+            {
+                await _context.SetAuditContextAsync(userId.Value, userName);
+            }
+
             var appointment = await _context.Appointments.FindAsync(appointmentId);
             if (appointment == null)
             {
@@ -77,11 +91,14 @@ namespace HospitalData.Services
 
         public async Task CancelAppointmentAsync(int appointmentId)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+            if (userId.HasValue) await _context.SetAuditContextAsync(userId.Value, userName);
+
             await _appointmentService.CancelAppointmentAsync(appointmentId);
         }
 
         public async Task<List<MedicalHistoryDto>> GetMyMedicalHistoryAsync(int loggedInUserId)
-
         {
             var doctor = await _context.Doctors
                            .FirstOrDefaultAsync(d => d.UserId == loggedInUserId);
@@ -104,6 +121,7 @@ namespace HospitalData.Services
                 })
                 .ToListAsync();
         }
+
         public async Task<List<InventoryDto>> GetAvailableMedicationsAsync()
         {
             return await _context.Medications
@@ -130,15 +148,28 @@ namespace HospitalData.Services
 
         public async Task CreatePrescriptionAsync(CreatePrescriptionDto dto)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+            if (userId.HasValue) await _context.SetAuditContextAsync(userId.Value, userName);
+
             await _prescriptionService.CreatePrescriptionAsync(dto);
         }
+
         public async Task ScheduleNewAppointmentAsync(ScheduleAppointmentDto dto)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+            if (userId.HasValue) await _context.SetAuditContextAsync(userId.Value, userName);
+
             await _appointmentService.ScheduleAppointmentAsync(dto);
         }
 
         public async Task RescheduleAppointmentAsync(int oldAppointmentId, ScheduleAppointmentDto newAppointmentDto)
         {
+            var userId = await _currentUserService.GetCurrentUserIdAsync();
+            var userName = await _currentUserService.GetCurrentUserNameAsync();
+            if (userId.HasValue) await _context.SetAuditContextAsync(userId.Value, userName);
+
             await _appointmentService.CancelAppointmentAsync(oldAppointmentId);
             await _appointmentService.ScheduleAppointmentAsync(newAppointmentDto);
         }
@@ -179,6 +210,7 @@ namespace HospitalData.Services
                 Username = doctor.User?.Username?? ""
             };
         }
+
         public async Task UpdateDoctorProfileAsync(DoctorProfileDto dto)
         {
             var userProfile = new UserProfileDto
@@ -201,7 +233,7 @@ namespace HospitalData.Services
             }
 
             await _userAccountService.UpdateUserProfileAsync(userProfile);        
-         }
+        }
 
         public async Task<List<LabTestDto>> GetAvailableLabTestsAsync()
         {
@@ -224,6 +256,14 @@ namespace HospitalData.Services
         {
             try 
             {
+                var userId = await _currentUserService.GetCurrentUserIdAsync();
+                var userName = await _currentUserService.GetCurrentUserNameAsync();
+
+                if (userId.HasValue) 
+                {
+                    await _context.SetAuditContextAsync(userId.Value, userName);
+                }
+
                 await _context.Database.ExecuteSqlInterpolatedAsync($"EXEC SP_CreateLabRequest @AppointmentID={appointmentId}, @TestID={testId}");
             }
             catch (Exception ex)
@@ -232,7 +272,4 @@ namespace HospitalData.Services
             }
         }
     }
-
-    
-    
 }
